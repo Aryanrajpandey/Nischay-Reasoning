@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+pydantic-settings
+structlog
+python-dotenv
+redis
+huggingface-hub
+sentence-transformers
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt
+pydantic[email]
+python-multipart
+groq
+PyPDF2

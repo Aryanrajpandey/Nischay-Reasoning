@@ -1,0 +1,2445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nischay — Adaptive Career Reasoning System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=JetBrains+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* ── Background Spectrum ── */
+  --bg-void:       #07090F;
+  --bg-panel:      #0B0E18;
+  --bg-surface:    #0F1420;
+  --bg-card:       #131928;
+
+  /* ── Accent System ── warm amber-gold primary, muted periwinkle secondary */
+  --accent-cyan:   #C8933C;      /* warm amber gold — primary accent */
+  --accent-violet: #6B5DB0;      /* deep amethyst */
+  --accent-teal:   #5878C8;      /* muted periwinkle */
+  --accent-glow:   rgba(200, 147, 60, 0.12);
+  --accent-danger: #E05C4B;
+  --accent-success:#2EBF8E;
+  --accent-warn:   #D4954A;
+
+  /* ── Text Hierarchy ── warm cream, not cold white */
+  --text-primary:  #EDE8DA;
+  --text-secondary:#B0A890;
+  --text-muted:    #7A7060;
+  --text-dim:      #4A4438;
+
+  /* ── Borders ── */
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-glow:   rgba(200, 147, 60, 0.18);
+
+  /* ── Shape ── */
+  --radius-card:   1.5rem;
+  --radius-pill:   9999px;
+  --radius-small:  0.75rem;
+
+  /* ── Typography ── */
+  --font-display:  'Sora', sans-serif;
+  --font-drama:    'Cormorant Garamond', serif;
+  --font-body:     'DM Sans', sans-serif;
+  --font-mono:     'JetBrains Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg-void);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  cursor: none;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* CUSTOM CURSOR */
+#cursor {
+  position: fixed;
+  width: 12px; height: 12px;
+  background: var(--accent-cyan);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.1s, width 0.2s, height 0.2s, background 0.2s;
+  mix-blend-mode: difference;
+}
+#cursor-ring {
+  position: fixed;
+  width: 36px; height: 36px;
+  border: 1px solid rgba(0,212,255,0.4);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99998;
+  transform: translate(-50%, -50%);
+  transition: transform 0.12s ease, width 0.3s, height 0.3s, opacity 0.3s;
+}
+body:hover #cursor-ring { opacity: 1; }
+
+/* GLASS */
+.glass {
+  background: rgba(15, 18, 30, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(200, 147, 60, 0.1);
+  border-radius: var(--radius-card);
+  box-shadow: 0 0 40px rgba(200, 147, 60, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.glass:hover {
+  border-color: rgba(200, 147, 60, 0.22);
+  box-shadow: 0 0 60px rgba(200, 147, 60, 0.07), 0 0 120px rgba(107, 93, 176, 0.04);
+  transform: translateY(-3px) scale(1.01);
+}
+
+/* NAVBAR */
+#navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 3rem;
+  background: rgba(7, 9, 15, 0.0);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  border-bottom: 1px solid transparent;
+  transition: background 0.5s ease, backdrop-filter 0.5s ease, border-color 0.5s ease;
+}
+#navbar.scrolled {
+  background: rgba(7, 9, 15, 0.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-color: rgba(200, 147, 60, 0.08);
+}
+.nav-logo {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+}
+.nav-logo span {
+  color: var(--accent-cyan);
+}
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.nav-links a {
+  font-family: var(--font-body);
+  font-size: 0.83rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+  letter-spacing: 0.01em;
+  font-weight: 400;
+}
+.nav-links a:hover { color: var(--text-primary); }
+.nav-cta {
+  padding: 0.55rem 1.4rem;
+  background: var(--accent-cyan);
+  color: var(--bg-void);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.8rem;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  transition: box-shadow 0.3s, transform 0.2s, opacity 0.2s;
+}
+.nav-cta:hover {
+  box-shadow: 0 0 28px rgba(200, 147, 60, 0.5);
+  transform: scale(1.03);
+}
+
+/* ── SECTION SHARED ── */
+section { position: relative; }
+.section-inner { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+
+/* ─────────────────────────── HERO ─────────────────────────── */
+#hero {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  padding-top: 160px;          /* 80px navbar + 80px breathing room */
+  padding-bottom: 8rem;
+  overflow: hidden;
+  position: relative;
+  background:
+    radial-gradient(ellipse 70% 60% at 75% 50%, rgba(200,147,60,0.04) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 80% at 10% 80%, rgba(91,120,200,0.06) 0%, transparent 60%),
+    var(--bg-void);
+}
+#hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(200,147,60,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200,147,60,0.025) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+#particles-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+/* ── HERO GRID — 12 cols, text left, cards right ── */
+.hero-wrapper {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 4rem;
+  width: 100%;
+}
+
+/* ── LEFT COLUMN ── */
+.hero-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* Eyebrow tag */
+.hero-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+  opacity: 0;
+  transform: translateY(12px);
+  animation: fadeUp 0.7s 0.1s forwards;
+}
+.hero-eyebrow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 8px rgba(200, 147, 60, 0.7);
+  flex-shrink: 0;
+}
+.hero-tag {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--accent-teal);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+/* Main heading */
+.hero-h1 {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(3rem, 6.5vw, 5.25rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+  max-width: 680px;
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fadeUp 0.8s 0.25s forwards;
+}
+
+/* Accent script line — separate from h1 */
+.hero-script {
+  font-family: var(--font-drama);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  color: var(--accent-cyan);
+  line-height: 1.2;
+  margin-top: 1.25rem;
+  letter-spacing: -0.01em;
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fadeUp 0.8s 0.4s forwards;
+}
+
+/* Paragraph */
+.hero-sub {
+  margin-top: 2rem;
+  font-family: var(--font-body);
+  font-size: 0.975rem;
+  color: var(--text-muted);
+  line-height: 1.8;
+  max-width: 520px;
+  font-weight: 300;
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fadeUp 0.7s 0.55s forwards;
+}
+
+/* Buttons */
+.hero-actions {
+  margin-top: 2.75rem;
+  display: flex;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fadeUp 0.7s 0.7s forwards;
+}
+.btn-primary {
+  padding: 0.875rem 2.25rem;
+  background: var(--accent-cyan);
+  color: var(--bg-void);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.875rem;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  border: none;
+  cursor: none;
+  letter-spacing: 0.01em;
+  transition: box-shadow 0.3s, transform 0.2s;
+  display: inline-block;
+}
+.btn-primary:hover {
+  box-shadow: 0 0 40px rgba(200, 147, 60, 0.55);
+  transform: scale(1.03);
+}
+.btn-secondary {
+  padding: 0.875rem 2.25rem;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 0.875rem;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: none;
+  transition: border-color 0.3s, color 0.3s;
+  display: inline-block;
+}
+.btn-secondary:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+
+/* TYPEWRITER */
+.typewriter-wrap {
+  margin-top: 2rem;
+  opacity: 0;
+  animation: fadeUp 0.7s 0.85s forwards;
+}
+.typewriter-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin-bottom: 0.35rem;
+}
+#typewriter {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--accent-teal);
+  min-height: 1.4em;
+}
+#typewriter::after {
+  content: '|';
+  animation: blink 1s infinite;
+  color: var(--accent-cyan);
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ── RIGHT COLUMN — Cards ── */
+.hero-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 2rem;
+  opacity: 0;
+  animation: slideInRight 0.9s 0.8s forwards;
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.hero-viz-container {
+  position: relative;
+  width: 110%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1000px;
+}
+.hero-viz-img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-card);
+  mask-image: radial-gradient(circle at center, black 40%, transparent 85%);
+  -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 85%);
+  animation: floatViz 12s ease-in-out infinite;
+  filter: contrast(1.1) brightness(0.9);
+}
+.hero-viz-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, var(--accent-cyan) 0%, transparent 60%);
+  opacity: 0.08;
+  filter: blur(80px);
+  pointer-events: none;
+}
+@keyframes floatViz {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-15px) rotate(1deg); }
+  66% { transform: translateY(10px) rotate(-1deg); }
+}
+
+/* Hero cards — no more absolute positioning */
+.hero-card {
+  padding: 1.25rem 1.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.67rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  transition: transform 0.3s ease;
+}
+.hero-card:hover { transform: translateY(-3px); }
+.card-title {
+  font-size: 0.58rem;
+  color: var(--accent-teal);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.65rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid rgba(200,147,60,0.1);
+}
+.card-warn { color: var(--accent-danger); }
+.card-ok   { color: var(--accent-success); }
+.card-mute { color: var(--text-dim); }
+.card-q    { color: var(--accent-cyan); font-style: italic; margin-top: 0.6rem; }
+.float-anim { animation: floatY 7s ease-in-out infinite; }
+.float-anim:nth-child(2) { animation-delay: -2.3s; }
+.float-anim:nth-child(3) { animation-delay: -4.6s; }
+
+@keyframes floatY   { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+@keyframes fadeUp   { to { opacity:1; transform:translateY(0) } }
+@keyframes slideLeft { to { opacity:1; transform:translateX(0) } }
+
+/* ─────────────── SECTION 2 — MANIFESTO ─────────────── */
+#manifesto {
+  padding: 8rem 0;
+  background: var(--bg-void);
+}
+.manifesto-text {
+  max-width: 680px;
+  margin: 0 auto;
+  text-align: center;
+  font-size: 1.15rem;
+  line-height: 2;
+  color: var(--text-muted);
+}
+.manifesto-text strong {
+  color: var(--text-primary);
+  font-weight: 400;
+}
+.manifesto-text em {
+  font-family: var(--font-drama);
+  font-style: italic;
+  color: var(--accent-cyan);
+}
+.manifesto-statements {
+  margin-top: 4rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+.manifesto-stmt {
+  padding: 2rem;
+  border-right: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.manifesto-stmt:nth-child(even) { border-right: none; }
+.manifesto-stmt:nth-child(3),
+.manifesto-stmt:nth-child(4) { border-bottom: none; }
+.stmt-reject {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  text-decoration: line-through;
+  margin-bottom: 0.4rem;
+}
+.stmt-real {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ─────────────── SECTION 3 — PROBLEM ─────────────── */
+#problem {
+  padding: 8rem 0;
+  background: linear-gradient(180deg, var(--bg-void) 0%, var(--bg-panel) 100%);
+}
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--accent-teal);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  margin-bottom: 1rem;
+}
+.section-h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  max-width: 700px;
+}
+.section-h2 em {
+  font-family: var(--font-drama);
+  font-style: italic;
+  color: var(--accent-cyan);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1.5rem;
+  margin: 4rem 0;
+}
+.stat-card {
+  text-align: center;
+  padding: 1.75rem 1rem;
+}
+.stat-number {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.9rem;
+  color: var(--accent-cyan);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.problem-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-top: 3rem;
+}
+.problem-card {
+  padding: 1.75rem;
+}
+.problem-card-quote {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+}
+.problem-card-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+/* ─────────────── SECTION 4 — COMPARISON ─────────────── */
+#comparison {
+  padding: 8rem 0;
+  background: var(--bg-panel);
+}
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 3rem;
+  font-size: 0.85rem;
+}
+.comparison-table th {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.78rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  text-align: center;
+  color: var(--text-muted);
+}
+.comparison-table th:first-child { text-align: left; color: var(--text-dim); }
+.comparison-table th.nischay-col { color: var(--accent-cyan); }
+.comparison-table td {
+  padding: 0.9rem 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+.comparison-table td:first-child { text-align: left; color: var(--text-secondary); }
+.comparison-table tr:hover td { background: rgba(255,255,255,0.015); }
+.check { color: var(--accent-success); font-size: 1rem; }
+.cross { color: var(--text-dim); font-size: 0.9rem; }
+.partial { color: var(--accent-warn); font-size: 0.75rem; }
+.nischay-col { background: rgba(0,212,255,0.03); }
+.comparison-closer {
+  margin-top: 3rem;
+  text-align: center;
+}
+.word-reveal {
+  font-family: var(--font-drama);
+  font-style: italic;
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.word-reveal em { color: var(--accent-cyan); font-style: normal; font-family: var(--font-display); font-weight: 700; }
+
+/* ─────────────── SECTION 5 — HOW IT REASONS ─────────────── */
+#reasoning {
+  padding: 8rem 0;
+  background: linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-void) 100%);
+}
+.pipeline {
+  margin-top: 4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+.pipeline-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 640px;
+  position: relative;
+}
+.pipeline-box {
+  padding: 1.25rem 2rem;
+  border-radius: var(--radius-small);
+  border: 1px solid rgba(0,212,255,0.1);
+  background: rgba(15,15,32,0.55);
+  backdrop-filter: blur(16px);
+  width: 100%;
+  text-align: center;
+}
+.pipeline-box-title {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--accent-teal);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.4rem;
+}
+.pipeline-box-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.pipeline-box.highlight {
+  border-color: rgba(0,212,255,0.3);
+  background: rgba(0,212,255,0.04);
+}
+.pipeline-box.meta {
+  border-color: rgba(124,58,237,0.3);
+  background: rgba(124,58,237,0.04);
+}
+.pipeline-arrow {
+  width: 1px;
+  height: 2.5rem;
+  background: linear-gradient(180deg, rgba(0,212,255,0.4), rgba(0,212,255,0.1));
+  position: relative;
+}
+.pipeline-arrow::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid rgba(0,212,255,0.4);
+}
+.pipeline-branch {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 800px;
+  margin: 0.5rem 0;
+}
+.branch-item {
+  padding: 0.9rem;
+  border-radius: var(--radius-small);
+  border: 1px solid rgba(0,212,255,0.08);
+  background: rgba(15,15,32,0.4);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.63rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.branch-item span { display: block; color: var(--accent-teal); margin-bottom: 0.2rem; }
+
+/* ─────────────── SECTION 6 — INTELLIGENCE ENGINE ─────────────── */
+#intelligence {
+  padding: 8rem 0;
+  background: var(--bg-void);
+}
+.section-sub {
+  font-size: 1rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  max-width: 580px;
+  margin-top: 1rem;
+}
+.intel-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-top: 3.5rem;
+}
+.intel-card {
+  padding: 1.5rem;
+  cursor: none;
+}
+.intel-icon {
+  width: 36px; height: 36px;
+  background: rgba(0,212,255,0.08);
+  border-radius: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+.intel-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+.intel-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
+/* ─────────────── SECTION 7 — TRAJECTORY ─────────────── */
+#trajectory {
+  padding: 8rem 0;
+  background: linear-gradient(180deg, var(--bg-void) 0%, var(--bg-panel) 50%, var(--bg-void) 100%);
+}
+.trajectory-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+.trajectory-card {
+  padding: 1.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.9;
+  color: var(--text-secondary);
+}
+.traj-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent-teal);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.traj-warn { color: var(--accent-danger); }
+.traj-ok { color: var(--accent-success); }
+.traj-dim { color: var(--text-dim); }
+.traj-highlight { color: var(--accent-cyan); }
+.traj-section { margin-top: 0.75rem; }
+.traj-label {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.3rem;
+}
+
+/* INTERACTIVE SLIDER */
+.trajectory-interactive {
+  margin-top: 3rem;
+  padding: 2rem;
+  border: 1px solid rgba(0,212,255,0.12);
+  border-radius: var(--radius-card);
+  background: rgba(15,15,32,0.4);
+}
+.slider-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.slider-label span {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  outline: none;
+  cursor: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  background: var(--accent-cyan);
+  border-radius: 50%;
+  cursor: none;
+  box-shadow: 0 0 12px rgba(0,212,255,0.5);
+  transition: transform 0.2s;
+}
+input[type=range]:hover::-webkit-slider-thumb { transform: scale(1.2); }
+.regret-display {
+  margin-top: 1.75rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+.regret-item {
+  text-align: center;
+  padding: 1.25rem;
+  border-radius: var(--radius-small);
+  background: rgba(15,15,32,0.5);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.regret-num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2.5rem;
+  letter-spacing: -0.04em;
+  transition: color 0.4s;
+}
+.regret-path {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.25rem;
+}
+.regret-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.3rem;
+}
+
+/* ─────────────── SECTION 8 — AGENTS ─────────────── */
+#agents {
+  padding: 8rem 0;
+  background: var(--bg-panel);
+}
+.agents-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-top: 3rem;
+}
+.agent-card {
+  padding: 1.5rem;
+  cursor: none;
+  position: relative;
+  overflow: hidden;
+}
+.agent-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(0,212,255,0.04), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.agent-card:hover::before { opacity: 1; }
+.agent-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem;
+  background: rgba(124,58,237,0.12);
+  border: 1px solid rgba(124,58,237,0.2);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: #A78BFA;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.75rem;
+}
+.agent-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+.agent-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+.meta-card {
+  grid-column: 1 / -1;
+  border-color: rgba(124,58,237,0.2);
+  background: rgba(124,58,237,0.03);
+}
+.meta-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+.meta-feature {
+  padding: 0.25rem 0.75rem;
+  background: rgba(124,58,237,0.1);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: #A78BFA;
+}
+
+/* ─────────────── SECTION 9 — MEMORY ─────────────── */
+#memory {
+  padding: 8rem 0;
+  background: var(--bg-void);
+}
+.memory-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  margin-top: 3rem;
+  align-items: start;
+}
+.memory-brain {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 420px;
+}
+.memory-timeline {
+  padding: 1.75rem;
+}
+.memory-timeline-title {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 1.25rem;
+}
+.timeline-item {
+  display: flex;
+  gap: 1rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  opacity: 0;
+  transform: translateX(-12px);
+  transition: opacity 0.4s, transform 0.4s;
+}
+.timeline-item.visible { opacity: 1; transform: none; }
+.timeline-session {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+  min-width: 68px;
+  padding-top: 0.1rem;
+}
+.timeline-content {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.timeline-content strong { color: var(--accent-cyan); font-weight: 500; }
+.timeline-content em { color: var(--accent-danger); font-style: normal; }
+
+/* ─────────────── SECTION 10 — UNCERTAINTY ─────────────── */
+#uncertainty {
+  padding: 8rem 0;
+  background: var(--bg-panel);
+}
+.uncertainty-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+.conf-card {
+  padding: 1.75rem;
+}
+.conf-level {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.conf-badge {
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 500;
+}
+.conf-high { background: rgba(16,185,129,0.12); color: var(--accent-success); border: 1px solid rgba(16,185,129,0.2); }
+.conf-medium { background: rgba(245,158,11,0.1); color: var(--accent-warn); border: 1px solid rgba(245,158,11,0.2); }
+.conf-low { background: rgba(239,68,68,0.1); color: var(--accent-danger); border: 1px solid rgba(239,68,68,0.2); }
+.conf-percent {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.6rem;
+  color: var(--text-primary);
+}
+.conf-claim {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+.conf-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--text-muted);
+}
+.conf-row span:first-child { color: var(--text-dim); font-family: var(--font-mono); font-size: 0.62rem; }
+.conf-closer {
+  margin-top: 3rem;
+  text-align: center;
+  font-family: var(--font-drama);
+  font-style: italic;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+}
+
+/* ─────────────── SECTION 11 — BEHAVIORAL DRIFT ─────────────── */
+#drift {
+  padding: 8rem 0;
+  background: var(--bg-void);
+}
+.drift-chart-wrap {
+  margin-top: 3rem;
+  padding: 2rem;
+  border: 1px solid rgba(0,212,255,0.08);
+  border-radius: var(--radius-card);
+  background: rgba(15,15,32,0.4);
+}
+.drift-legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+.legend-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+#drift-svg { width: 100%; height: 240px; }
+.drift-annotation {
+  margin-top: 2rem;
+  padding: 1.25rem 1.5rem;
+  border-left: 3px solid var(--accent-danger);
+  background: rgba(239,68,68,0.04);
+  border-radius: 0 var(--radius-small) var(--radius-small) 0;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.drift-annotation strong { color: var(--text-primary); }
+
+/* ─────────────── SECTION 12 — PARENT ─────────────── */
+#parent {
+  padding: 8rem 0;
+  background: linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-void) 100%);
+}
+.parent-content {
+  max-width: 640px;
+}
+.parent-h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.75rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 2rem;
+  color: var(--text-primary);
+}
+.parent-section-title {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--accent-teal);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.75rem;
+  margin-top: 2rem;
+}
+.parent-body {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  line-height: 1.85;
+}
+.parent-footer {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+
+/* ─────────────── SECTION 13 — CTA ─────────────── */
+#final-cta {
+  padding: 10rem 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(ellipse 80% 60% at 50% 100%, rgba(200,147,60,0.07) 0%, transparent 70%),
+              var(--bg-void);
+}
+#final-cta::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(200,147,60,0.07) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  animation: pulse 4s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes pulse { 0%,100%{transform:translate(-50%,-50%) scale(1)} 50%{transform:translate(-50%,-50%) scale(1.15)} }
+.cta-h2 {
+  font-family: var(--font-drama);
+  font-style: italic;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  position: relative;
+  z-index: 1;
+}
+.cta-h2 em {
+  font-style: normal;
+  color: var(--accent-cyan);
+  font-family: var(--font-display);
+  font-weight: 800;
+}
+.cta-sub {
+  margin-top: 1.5rem;
+  font-size: 1rem;
+  color: var(--text-muted);
+  position: relative;
+  z-index: 1;
+}
+.cta-actions {
+  margin-top: 2.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* ─────────────── UTILITY ─────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.65s ease, transform 0.65s cubic-bezier(0.34,1.2,0.64,1);
+}
+.reveal.visible { opacity: 1; transform: none; }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+.reveal-delay-5 { transition-delay: 0.5s; }
+
+/* particles loading */
+#loading-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-void);
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
+  transition: opacity 0.6s, visibility 0.6s;
+}
+#loading-screen.hidden { opacity: 0; visibility: hidden; }
+.loading-logo {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2rem;
+  color: var(--accent-cyan);
+  letter-spacing: -0.04em;
+}
+.loading-bar {
+  width: 200px; height: 2px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 1px;
+  overflow: hidden;
+}
+.loading-fill {
+  height: 100%;
+  background: var(--accent-cyan);
+  width: 0%;
+  transition: width 1.2s ease;
+  box-shadow: 0 0 12px rgba(200, 147, 60, 0.6);
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .hero-wrapper { grid-template-columns: 1fr; gap: 3rem; }
+  .hero-right { padding-top: 0; }
+  .hero-h1 { font-size: clamp(2.8rem, 8vw, 4.5rem); }
+}
+@media (max-width: 900px) {
+  .stats-grid { grid-template-columns: repeat(3,1fr); }
+  .problem-cards { grid-template-columns: 1fr; }
+  .trajectory-grid { grid-template-columns: 1fr; }
+  .intel-grid { grid-template-columns: repeat(2,1fr); }
+  .agents-grid { grid-template-columns: 1fr 1fr; }
+  .memory-layout { grid-template-columns: 1fr; }
+  .uncertainty-grid { grid-template-columns: 1fr; }
+  .manifesto-statements { grid-template-columns: 1fr; }
+  #navbar { padding: 0 1.5rem; }
+  .nav-links { display: none; }
+  #hero { padding-top: 120px; }
+}
+@media (max-width: 600px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .agents-grid { grid-template-columns: 1fr; }
+  .intel-grid { grid-template-columns: 1fr; }
+  .section-inner { padding: 0 1.25rem; }
+  .hero-h1 { font-size: clamp(2.2rem, 9vw, 3.2rem); }
+  .hero-script { font-size: clamp(1.4rem, 6vw, 2rem); }
+  .hero-actions { flex-direction: column; align-items: flex-start; }
+  .hero-actions .btn-primary,
+  .hero-actions .btn-secondary { width: 100%; text-align: center; }
+  #hero { padding-top: 100px; }
+}
+</style>
+</head>
+<body>
+
+<div id="loading-screen">
+  <div class="loading-logo">Nischay</div>
+  <div class="loading-bar"><div class="loading-fill" id="loading-fill"></div></div>
+  <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-dim)">Initializing reasoning system</div>
+</div>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- ─── NAVBAR ─── -->
+<nav id="navbar">
+  <div class="nav-logo">Ni<span>s</span>chay</div>
+  <ul class="nav-links">
+    <li><a href="#manifesto">Why This Exists</a></li>
+    <li><a href="#reasoning">How It Reasons</a></li>
+    <li><a href="#intelligence">Intelligence</a></li>
+    <li><a href="#trajectory">Simulation</a></li>
+  </ul>
+  <a href="/app" class="nav-cta">Begin reasoning</a>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section id="hero">
+  <canvas id="particles-canvas"></canvas>
+
+  <div class="section-inner hero-wrapper">
+
+    <!-- LEFT: Typography block -->
+    <div class="hero-left">
+
+      <div class="hero-eyebrow">
+        <span class="hero-eyebrow-dot"></span>
+        <p class="hero-tag">Adaptive Career Reasoning System · India</p>
+      </div>
+
+      <h1 class="hero-h1">
+        See the probability<br>
+        distribution of<br>
+        your future
+      </h1>
+
+      <!-- Script accent — clearly separated below headline -->
+      <p class="hero-script">before you commit years to it.</p>
+
+      <p class="hero-sub">
+        Nischay models your actual situation — marks, city, financial
+        reality, family pressure, personality, risk tolerance — and
+        simulates what each path looks like 10 years from now.
+        Not optimistically. Accurately.
+      </p>
+
+      <div class="typewriter-wrap">
+        <div class="typewriter-label">// profiling student</div>
+        <div id="typewriter"></div>
+      </div>
+
+      <div class="hero-actions">
+        <a href="/app" class="btn-primary">Start reasoning</a>
+        <a href="#trajectory" class="btn-secondary">See a trajectory simulation</a>
+      </div>
+    </div>
+
+    <!-- RIGHT: Cinematic Visualization -->
+    <div class="hero-right">
+      <div class="hero-viz-container">
+        <img src="/static/images/hero_viz.png" alt="Nischay Probability Distribution" class="hero-viz-img">
+        <div class="hero-viz-glow"></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ─── MANIFESTO ─── -->
+<section id="manifesto">
+  <div class="section-inner">
+    <div class="manifesto-text reveal">
+      Most career guidance systems in India optimize for one thing:<br>
+      <strong>conformity.</strong><br><br>
+      They ask: what does the family want?<br>
+      What will society accept?<br>
+      What is the safe answer?<br><br>
+      They never ask: <em>what is the probability of satisfaction
+      given this student's specific learning style, financial constraints,
+      city, cognitive profile, and long-term risk tolerance?</em><br><br>
+      That question is harder.<br>
+      It requires modeling, not advising.<br>
+      Simulation, not suggestion.<br>
+      Probabilistic honesty, not comfortable reassurance.<br><br>
+      Nischay was built to ask that harder question.<br>
+      And to answer it without flinching.
+    </div>
+
+    <div class="manifesto-statements reveal reveal-delay-2">
+      <div class="manifesto-stmt">
+        <div class="stmt-reject">We optimize for what sounds good.</div>
+        <div class="stmt-real">We model what is likely.</div>
+      </div>
+      <div class="manifesto-stmt">
+        <div class="stmt-reject">We give you what you want to hear.</div>
+        <div class="stmt-real">We give you what the data shows.</div>
+      </div>
+      <div class="manifesto-stmt">
+        <div class="stmt-reject">Career decisions are simple.</div>
+        <div class="stmt-real">We help you hold their complexity honestly.</div>
+      </div>
+      <div class="manifesto-stmt">
+        <div class="stmt-reject">We replace your judgment.</div>
+        <div class="stmt-real">We give your judgment better inputs.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── PROBLEM ─── -->
+<section id="problem">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">The problem</div>
+      <h2 class="section-h2">500 million decisions. Made without <em>the right data.</em></h2>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card glass reveal reveal-delay-1">
+        <div class="stat-number" data-target="500" data-suffix="M+">0</div>
+        <div class="stat-label">Students facing career decisions without reliable guidance</div>
+      </div>
+      <div class="stat-card glass reveal reveal-delay-2">
+        <div class="stat-number" data-target="92000" data-prefix="1:">0</div>
+        <div class="stat-label">Counselor-to-student ratio in India</div>
+      </div>
+      <div class="stat-card glass reveal reveal-delay-3">
+        <div class="stat-number" data-target="240000" data-prefix="₹" data-format="lakh">0</div>
+        <div class="stat-label">Average spent on coaching that doesn't model your situation</div>
+      </div>
+      <div class="stat-card glass reveal reveal-delay-4">
+        <div class="stat-number" data-target="67" data-suffix="%">0</div>
+        <div class="stat-label">Report regretting their stream choice within three years</div>
+      </div>
+      <div class="stat-card glass reveal reveal-delay-5">
+        <div class="stat-number" data-target="85" data-suffix=" yrs" data-decimal="true">0</div>
+        <div class="stat-label">Average commitment length of a career decision made at 17</div>
+      </div>
+    </div>
+
+    <div class="problem-cards">
+      <div class="problem-card glass reveal reveal-delay-1">
+        <div class="problem-card-quote">"Your father wants MBBS."</div>
+        <div class="problem-card-sub">Because his colleague's son is a doctor. Not because he has modeled your learning style against medical education requirements.</div>
+      </div>
+      <div class="problem-card glass reveal reveal-delay-2">
+        <div class="problem-card-quote">"Your teacher said: follow your passion."</div>
+        <div class="problem-card-sub">Your passion doesn't pay rent in a Tier-2 city on a Tier-3 college salary. Nobody ran those numbers for you.</div>
+      </div>
+      <div class="problem-card glass reveal reveal-delay-3">
+        <div class="problem-card-quote">"You Googled it."</div>
+        <div class="problem-card-sub">47 articles. None of them knew your marks, your city, your financial ceiling, your risk tolerance, or your fear.</div>
+      </div>
+      <div class="problem-card glass reveal reveal-delay-4">
+        <div class="problem-card-quote">"The counselor gave you a PDF."</div>
+        <div class="problem-card-sub">And moved on to the next student. Your situation was not modeled. It was categorized.</div>
+      </div>
+      <div class="problem-card glass reveal" style="grid-column: 1 / -1; reveal-delay-5">
+        <div class="problem-card-quote">"You chose the safe option."</div>
+        <div class="problem-card-sub">And now, two years in, you're not sure if "safe" and "right" were ever the same thing.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── COMPARISON ─── -->
+<section id="comparison">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">The gap</div>
+      <h2 class="section-h2">Every existing system fails you <em>in a specific way.</em></h2>
+    </div>
+
+    <table class="comparison-table reveal reveal-delay-2">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Google</th>
+          <th>ChatGPT</th>
+          <th>Coaching</th>
+          <th>Counselors</th>
+          <th class="nischay-col">Nischay</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Models your specific profile</td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="partial">Partial</span></td>
+          <td><span class="partial">Sometimes</span></td>
+          <td class="nischay-col"><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>India-specific salary data, cited</td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="partial">Hallucinated</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="partial">Varies</span></td>
+          <td class="nischay-col"><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Remembers you across time</td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td class="nischay-col"><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Simulates future trajectories</td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td class="nischay-col"><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Detects behavioral drift</td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td class="nischay-col"><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Calibrated confidence levels</td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td class="nischay-col"><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Honest when it's uncomfortable</td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="partial">Rarely</span></td>
+          <td class="nischay-col"><span class="check">✓</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="comparison-closer reveal reveal-delay-3">
+      <p class="word-reveal">Nischay doesn't give you advice.<br>It gives you a <em>model of your actual situation.</em></p>
+    </div>
+  </div>
+</section>
+
+<!-- ─── REASONING PIPELINE ─── -->
+<section id="reasoning">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Architecture</div>
+      <h2 class="section-h2">Not a chatbot with a database.<br><em>A reasoning system with memory.</em></h2>
+    </div>
+
+    <div class="pipeline reveal reveal-delay-2">
+      <div class="pipeline-node">
+        <div class="pipeline-box highlight">
+          <div class="pipeline-box-title">Student says something real</div>
+          <div class="pipeline-box-sub">Language, intent, emotion, behavioral signals extracted</div>
+        </div>
+      </div>
+      <div class="pipeline-arrow"></div>
+      <div class="pipeline-node">
+        <div class="pipeline-box">
+          <div class="pipeline-box-title">Profile Agent + Personality Model</div>
+          <div class="pipeline-box-sub">Context built before any advice is generated</div>
+        </div>
+      </div>
+      <div class="pipeline-arrow"></div>
+      <div class="pipeline-node" style="max-width:800px;width:100%">
+        <div class="pipeline-box highlight" style="margin-bottom:0.75rem">
+          <div class="pipeline-box-title">Intelligence Engine</div>
+        </div>
+        <div class="pipeline-branch">
+          <div class="branch-item"><span>Clustering</span>847 similar students</div>
+          <div class="branch-item"><span>Rankings</span>Career fit scoring</div>
+          <div class="branch-item"><span>Regression</span>Salary trajectories</div>
+          <div class="branch-item"><span>Risk</span>Dropout & regret</div>
+        </div>
+      </div>
+      <div class="pipeline-arrow"></div>
+      <div class="pipeline-node" style="max-width:800px;width:100%">
+        <div class="pipeline-box" style="margin-bottom:0.75rem">
+          <div class="pipeline-box-title">9 Specialized Agents run in parallel</div>
+        </div>
+        <div class="pipeline-branch" style="grid-template-columns:repeat(3,1fr)">
+          <div class="branch-item"><span>Profile</span>Context builder</div>
+          <div class="branch-item"><span>Research</span>Real data, cited</div>
+          <div class="branch-item"><span>Devil's Advocate</span>Challenges assumptions</div>
+          <div class="branch-item"><span>Salary</span>Ranges by city</div>
+          <div class="branch-item"><span>Skill Gap</span>Specific actions</div>
+          <div class="branch-item"><span>Contradiction</span>Detects conflicts</div>
+        </div>
+      </div>
+      <div class="pipeline-arrow"></div>
+      <div class="pipeline-node" style="max-width:800px;width:100%">
+        <div class="pipeline-box meta" style="margin-bottom:0.75rem">
+          <div class="pipeline-box-title">Meta-Reasoning Layer</div>
+          <div class="pipeline-box-sub">Resolves agent conflicts · Aggregates confidence · Flags uncertainty</div>
+        </div>
+      </div>
+      <div class="pipeline-arrow"></div>
+      <div class="pipeline-node">
+        <div class="pipeline-box">
+          <div class="pipeline-box-title">Uncertainty Engine</div>
+          <div class="pipeline-box-sub">Missing variables · Confidence drivers · Assumption sensitivity</div>
+        </div>
+      </div>
+      <div class="pipeline-arrow"></div>
+      <div class="pipeline-node">
+        <div class="pipeline-box highlight">
+          <div class="pipeline-box-title">Longitudinal Memory + Behavioral Drift Detection</div>
+          <div class="pipeline-box-sub">Learns from you. Detects when your signals change.</div>
+        </div>
+      </div>
+      <div class="pipeline-arrow"></div>
+      <div class="pipeline-node">
+        <div class="pipeline-box meta">
+          <div class="pipeline-box-title">Outcome Feedback Loop</div>
+          <div class="pipeline-box-sub">Learns from real student outcomes over time</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── INTELLIGENCE ENGINE ─── -->
+<section id="intelligence">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Intelligence layer</div>
+      <h2 class="section-h2">Most AI systems relay intelligence.<br><em>Nischay generates it.</em></h2>
+      <p class="section-sub">Beneath every conversation is a reasoning layer that runs before the LLM responds.</p>
+    </div>
+
+    <div class="intel-grid">
+      <div class="intel-card glass reveal reveal-delay-1">
+        <div class="intel-icon">🧩</div>
+        <div class="intel-title">Behavioral Clustering</div>
+        <div class="intel-desc">Groups your profile against 847 anonymized similar students. Shows observed outcomes at 3, 5, and 10 years. Tells you which cluster you're in — and what that cluster's trajectory looks like.</div>
+      </div>
+      <div class="intel-card glass reveal reveal-delay-2">
+        <div class="intel-icon">📊</div>
+        <div class="intel-title">Career Recommendation Ranking</div>
+        <div class="intel-desc">Scores each potential career path against your specific profile vector: marks, city, financial tier, learning style, risk tolerance, and long-term preference signals. Not a list. A ranked probability distribution.</div>
+      </div>
+      <div class="intel-card glass reveal reveal-delay-3">
+        <div class="intel-icon">📈</div>
+        <div class="intel-title">Salary Trajectory Regression</div>
+        <div class="intel-desc">Builds a salary model for your specific combination of college tier + city + role + year of graduation. Shows median, low, and high trajectories with what determines each.</div>
+      </div>
+      <div class="intel-card glass reveal reveal-delay-4">
+        <div class="intel-icon">⚠️</div>
+        <div class="intel-title">Dropout & Regret Risk</div>
+        <div class="intel-desc">Calculates the probability that you will regret this decision based on: intrinsic motivation signals, external pressure ratio, alignment between stated goal and revealed preference.</div>
+      </div>
+      <div class="intel-card glass reveal reveal-delay-1">
+        <div class="intel-icon">🔍</div>
+        <div class="intel-title">Contradiction Scoring</div>
+        <div class="intel-desc">Continuously measures the distance between your stated goals and your revealed constraints. A high contradiction score is a flag — not a judgment.</div>
+      </div>
+      <div class="intel-card glass reveal reveal-delay-2">
+        <div class="intel-icon">🧠</div>
+        <div class="intel-title">Personality Modeling</div>
+        <div class="intel-desc">Maps Big Five traits, cognitive style, risk tolerance, and motivation patterns from conversational signals. Recommendations adapt when your personality profile updates. No forms required.</div>
+      </div>
+      <div class="intel-card glass reveal reveal-delay-3">
+        <div class="intel-icon">🎯</div>
+        <div class="intel-title">Confidence Calibration</div>
+        <div class="intel-desc">Every output carries a confidence level with a listed reason. Low confidence = missing variables, weak data, or conflicting signals. You always know why Nischay is or isn't certain.</div>
+      </div>
+      <div class="intel-card glass reveal reveal-delay-4">
+        <div class="intel-icon">📉</div>
+        <div class="intel-title">Longitudinal Behavioral Analysis</div>
+        <div class="intel-desc">Tracks how your signals change across sessions. Confidence trends. Pressure trends. Decision consistency. Avoidance patterns. The data source for behavioral drift detection.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── TRAJECTORY SIMULATION ─── -->
+<section id="trajectory">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Trajectory simulation</div>
+      <h2 class="section-h2">See what each path looks like.<br><em>Before you commit to it.</em></h2>
+      <p class="section-sub">Not a prediction. A probability distribution across possible futures.</p>
+    </div>
+
+    <div class="trajectory-grid">
+      <div class="trajectory-card glass reveal reveal-delay-1">
+        <div class="traj-title">PATH A: MBBS</div>
+        <div class="traj-section">
+          <div class="traj-label">Years 1–6 (Medical school + internship)</div>
+          Financial independence: <span class="traj-warn">None</span><br>
+          Academic stress: <span class="traj-warn">Very High (rote-intensive)</span><br>
+          Memorization tolerance: <span class="traj-warn">Low [⚠ Profile mismatch]</span><br>
+          Burnout probability: <span class="traj-warn">58%</span>
+        </div>
+        <div class="traj-section">
+          <div class="traj-label">Years 7–10 (Residency + early practice)</div>
+          Income: <span class="traj-highlight">₹12–18L (growing)</span><br>
+          Specialization pressure: <span class="traj-warn">High</span><br>
+          Autonomy: Low to moderate
+        </div>
+        <div class="traj-section">
+          <div class="traj-label">Year 10 outlook</div>
+          If intrinsically motivated: <span class="traj-ok">Satisfaction 71%</span><br>
+          If externally motivated: <span class="traj-warn">Satisfaction 34%</span><br>
+          Intrinsic motivation signal: <span class="traj-warn">Ambiguous [⚠]</span>
+        </div>
+        <div class="traj-section" style="margin-top:1rem; padding-top:0.75rem; border-top:1px solid rgba(239,68,68,0.2)">
+          <span class="traj-warn" style="font-size:0.8rem; font-family:var(--font-display); font-weight:700">Regret probability (given your profile): 61%</span>
+        </div>
+      </div>
+
+      <div class="trajectory-card glass reveal reveal-delay-2">
+        <div class="traj-title">PATH B: B.Tech CSE → Product/Data</div>
+        <div class="traj-section">
+          <div class="traj-label">Years 1–4 (College)</div>
+          Financial independence: <span class="traj-ok">Partial (internships)</span><br>
+          Academic stress: Moderate (analytical-heavy)<br>
+          Analytical score: <span class="traj-ok">High [✓ Profile match]</span><br>
+          Burnout probability: <span class="traj-ok">28%</span>
+        </div>
+        <div class="traj-section">
+          <div class="traj-label">Years 5–8 (Early career)</div>
+          Income: <span class="traj-highlight">₹8–22L (skill-dependent)</span><br>
+          Autonomy: <span class="traj-ok">Moderate to high</span><br>
+          Growth trajectory: <span class="traj-ok">Steep with right skills</span>
+        </div>
+        <div class="traj-section">
+          <div class="traj-label">Year 10 outlook</div>
+          Median case: <span class="traj-highlight">₹22–32L</span>, moderate satisfaction<br>
+          Strong case: <span class="traj-ok">₹40L+</span>, high autonomy<br>
+          What determines which: <span class="traj-dim">[see skill roadmap]</span>
+        </div>
+        <div class="traj-section" style="margin-top:1rem; padding-top:0.75rem; border-top:1px solid rgba(16,185,129,0.2)">
+          <span class="traj-ok" style="font-size:0.8rem; font-family:var(--font-display); font-weight:700">Regret probability (given your profile): 24%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive slider -->
+    <div class="trajectory-interactive reveal reveal-delay-3">
+      <div style="margin-bottom:1.5rem">
+        <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--accent-teal);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:0.5rem">Live simulation — adjust inputs, watch the distribution change</div>
+        <div style="font-family:var(--font-display);font-weight:600;color:var(--text-secondary);font-size:1rem">These numbers are based on your profile.</div>
+      </div>
+
+      <div style="margin-bottom:1.5rem">
+        <div class="slider-label">
+          Intrinsic Motivation for Medicine
+          <span id="motivation-val">Low</span>
+        </div>
+        <input type="range" id="motivation-slider" min="0" max="100" value="20">
+      </div>
+
+      <div style="margin-bottom:1.5rem">
+        <div class="slider-label">
+          Financial Pressure
+          <span id="financial-val">Moderate</span>
+        </div>
+        <input type="range" id="financial-slider" min="0" max="100" value="50">
+      </div>
+
+      <div style="margin-bottom:1.5rem">
+        <div class="slider-label">
+          Prep Commitment (hours/day)
+          <span id="prep-val">4 hrs/day</span>
+        </div>
+        <input type="range" id="prep-slider" min="0" max="100" value="40">
+      </div>
+
+      <div class="regret-display">
+        <div class="regret-item">
+          <div class="regret-path">MBBS — Regret Probability</div>
+          <div class="regret-num" id="mbbs-regret" style="color:var(--accent-danger)">61%</div>
+          <div class="regret-label">Based on current profile signals</div>
+        </div>
+        <div class="regret-item">
+          <div class="regret-path">B.Tech CSE — Regret Probability</div>
+          <div class="regret-num" id="cse-regret" style="color:var(--accent-success)">24%</div>
+          <div class="regret-label">Based on current profile signals</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── AGENTS ─── -->
+<section id="agents">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Multi-agent architecture</div>
+      <h2 class="section-h2">Nine agents. One meta-brain.<br><em>The first time they disagree, you benefit.</em></h2>
+      <p class="section-sub" style="margin-top:1rem">Agents run in parallel. They don't always agree. The Meta-Reasoning Layer resolves their conflicts — and shows you the disagreement.</p>
+    </div>
+
+    <div class="agents-grid">
+      <div class="agent-card glass reveal reveal-delay-1">
+        <div class="agent-badge">01</div>
+        <div class="agent-name">Profile Agent</div>
+        <div class="agent-desc">Builds your context before advising you. Personality signals, learning style, emotional state, constraints. Feeds the intelligence engine.</div>
+      </div>
+      <div class="agent-card glass reveal reveal-delay-2">
+        <div class="agent-badge">02</div>
+        <div class="agent-name">Research Agent</div>
+        <div class="agent-desc">Retrieves real career data. NIRF rankings, salary surveys, placement records, market demand. Cites every source. Never invents statistics.</div>
+      </div>
+      <div class="agent-card glass reveal reveal-delay-3">
+        <div class="agent-badge">03</div>
+        <div class="agent-name">Devil's Advocate</div>
+        <div class="agent-desc">Challenges every assumption. Especially the ones you're attached to. Probability estimates, not vague warnings.</div>
+      </div>
+      <div class="agent-card glass reveal reveal-delay-1">
+        <div class="agent-badge">04</div>
+        <div class="agent-name">Salary Agent</div>
+        <div class="agent-desc">Salary ranges by college tier, city, role, year. Always explained. Always a distribution, not a number. Sources cited.</div>
+      </div>
+      <div class="agent-card glass reveal reveal-delay-2">
+        <div class="agent-badge">05</div>
+        <div class="agent-name">Skill Gap Agent</div>
+        <div class="agent-desc">Specific gaps. Specific resources. Measurable timelines. "Improve communication" is not feedback. This agent gives you the actual gap.</div>
+      </div>
+      <div class="agent-card glass reveal reveal-delay-3">
+        <div class="agent-badge">06</div>
+        <div class="agent-name">Follow-Up Agent</div>
+        <div class="agent-desc">Tracks what was said in prior sessions. Checks progress. Corrects itself when advice was wrong. References specific advice by session number.</div>
+      </div>
+      <div class="agent-card glass reveal reveal-delay-1">
+        <div class="agent-badge">07</div>
+        <div class="agent-name">Resume Agent</div>
+        <div class="agent-desc">Recruiter-level line-by-line feedback. ATS gaps, metric flags, verb-level suggestions. Before/After/Why for every note.</div>
+      </div>
+      <div class="agent-card glass reveal reveal-delay-2">
+        <div class="agent-badge">08</div>
+        <div class="agent-name">Contradiction Agent</div>
+        <div class="agent-desc">Detects when your stated goals conflict with revealed constraints. Names it. Asks which matters more. Does not resolve it for you.</div>
+      </div>
+      <div class="agent-card glass reveal reveal-delay-3">
+        <div class="agent-badge">09</div>
+        <div class="agent-name">Trajectory Agent</div>
+        <div class="agent-desc">Simulates your future across selected career paths. Stress, income, satisfaction, burnout, autonomy — modeled over 10 years. Shows the distribution.</div>
+      </div>
+      <div class="agent-card glass meta-card reveal">
+        <div class="agent-badge" style="background:rgba(124,58,237,0.15);color:#A78BFA;border-color:rgba(124,58,237,0.3)">META</div>
+        <div class="agent-name">Meta-Reasoning Layer</div>
+        <div class="agent-desc">Runs after all agents complete. Resolves disagreements. Aggregates confidence scores. Identifies where agents diverge significantly and surfaces that divergence as meaningful uncertainty.</div>
+        <div class="meta-features">
+          <span class="meta-feature">Conflict resolution</span>
+          <span class="meta-feature">Confidence aggregation</span>
+          <span class="meta-feature">Uncertainty mapping</span>
+          <span class="meta-feature">Final synthesis</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── MEMORY ─── -->
+<section id="memory">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Longitudinal memory</div>
+      <h2 class="section-h2">Most AI forgets you the moment<br>you close the tab.</h2>
+      <p class="section-sub" style="margin-top:1rem;font-family:var(--font-drama);font-style:italic;font-size:1.15rem;color:var(--accent-cyan)">Nischay builds a model of you across time.</p>
+    </div>
+
+    <div class="memory-layout">
+      <div class="memory-brain reveal reveal-delay-1">
+        <svg viewBox="0 0 420 420" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+          <defs>
+            <radialGradient id="center-glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#C8933C" stop-opacity="0.15"/>
+              <stop offset="100%" stop-color="#C8933C" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <!-- Center glow -->
+          <circle cx="210" cy="210" r="90" fill="url(#center-glow)"/>
+          <!-- Orbit lines -->
+          <circle cx="210" cy="210" r="140" fill="none" stroke="rgba(0,212,255,0.06)" stroke-width="1" stroke-dasharray="4 8"/>
+          <!-- Center node -->
+          <circle cx="210" cy="210" r="44" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.25)" stroke-width="1.5"/>
+          <text x="210" y="205" text-anchor="middle" fill="#C8933C" font-family="JetBrains Mono" font-size="8" letter-spacing="1">LONGITUDINAL</text>
+          <text x="210" y="218" text-anchor="middle" fill="#C8933C" font-family="JetBrains Mono" font-size="8" letter-spacing="1">STUDENT MODEL</text>
+          <!-- Orbital nodes - 9 nodes -->
+          <g class="orbit-node" style="animation:orbitPulse 3s ease-in-out infinite">
+            <line x1="210" y1="166" x2="210" y2="210" stroke="rgba(0,212,255,0.1)" stroke-width="1"/>
+            <circle cx="210" cy="154" r="24" fill="rgba(15,15,32,0.8)" stroke="rgba(0,212,255,0.2)" stroke-width="1"/>
+            <text x="210" y="151" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="7">Emotional</text>
+            <text x="210" y="161" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="7">State</text>
+          </g>
+          <g style="animation:orbitPulse 3s 0.33s ease-in-out infinite">
+            <line x1="249" y1="172" x2="210" y2="210" stroke="rgba(0,212,255,0.1)" stroke-width="1"/>
+            <circle cx="263" cy="163" r="24" fill="rgba(15,15,32,0.8)" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+            <text x="263" y="160" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="7">Financial</text>
+            <text x="263" y="170" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="7">Reality</text>
+          </g>
+          <g style="animation:orbitPulse 3s 0.66s ease-in-out infinite">
+            <line x1="268" y1="210" x2="210" y2="210" stroke="rgba(0,212,255,0.1)" stroke-width="1"/>
+            <circle cx="282" cy="210" r="24" fill="rgba(15,15,32,0.8)" stroke="rgba(0,212,255,0.2)" stroke-width="1"/>
+            <text x="282" y="207" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="7">Personality</text>
+            <text x="282" y="217" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="7">Profile</text>
+          </g>
+          <g style="animation:orbitPulse 3s 1s ease-in-out infinite">
+            <line x1="249" y1="248" x2="210" y2="210" stroke="rgba(0,212,255,0.1)" stroke-width="1"/>
+            <circle cx="263" cy="257" r="24" fill="rgba(15,15,32,0.8)" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+            <text x="263" y="254" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="7">Learning</text>
+            <text x="263" y="264" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="7">Style</text>
+          </g>
+          <g style="animation:orbitPulse 3s 1.33s ease-in-out infinite">
+            <line x1="210" y1="254" x2="210" y2="210" stroke="rgba(0,212,255,0.1)" stroke-width="1"/>
+            <circle cx="210" cy="268" r="24" fill="rgba(15,15,32,0.8)" stroke="rgba(239,68,68,0.2)" stroke-width="1"/>
+            <text x="210" y="265" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="7">Career</text>
+            <text x="210" y="275" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="7">Fears</text>
+          </g>
+          <g style="animation:orbitPulse 3s 1.66s ease-in-out infinite">
+            <line x1="171" y1="248" x2="210" y2="210" stroke="rgba(0,212,255,0.1)" stroke-width="1"/>
+            <circle cx="157" cy="257" r="24" fill="rgba(15,15,32,0.8)" stroke="rgba(245,158,11,0.2)" stroke-width="1"/>
+            <text x="157" y="254" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="7">Family</text>
+            <text x="157" y="264" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="7">Pressure</text>
+          </g>
+          <g style="animation:orbitPulse 3s 2s ease-in-out infinite">
+            <line x1="152" y1="210" x2="210" y2="210" stroke="rgba(0,212,255,0.1)" stroke-width="1"/>
+            <circle cx="138" cy="210" r="24" fill="rgba(15,15,32,0.8)" stroke="rgba(239,68,68,0.2)" stroke-width="1"/>
+            <text x="138" y="207" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="6.5">Behavioral</text>
+            <text x="138" y="217" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="6.5">Drift Log</text>
+          </g>
+          <g style="animation:orbitPulse 3s 2.33s ease-in-out infinite">
+            <line x1="171" y1="172" x2="210" y2="210" stroke="rgba(0,212,255,0.1)" stroke-width="1"/>
+            <circle cx="157" cy="163" r="24" fill="rgba(15,15,32,0.8)" stroke="rgba(245,158,11,0.2)" stroke-width="1"/>
+            <text x="157" y="160" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="6.5">Contradiction</text>
+            <text x="157" y="170" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="6.5">History</text>
+          </g>
+          <g style="animation:orbitPulse 3s 2.66s ease-in-out infinite">
+            <line x1="210" y1="166" x2="210" y2="210" stroke="transparent"/>
+            <circle cx="210" cy="86" r="26" fill="rgba(15,15,32,0.8)" stroke="rgba(16,185,129,0.2)" stroke-width="1"/>
+            <text x="210" y="83" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="6.5">Outcome</text>
+            <text x="210" y="93" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="6.5">Predictions</text>
+            <line x1="210" y1="112" x2="210" y2="166" stroke="rgba(16,185,129,0.15)" stroke-width="1"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="memory-timeline glass reveal reveal-delay-2">
+        <div class="memory-timeline-title">// memory log — session timeline</div>
+        <div class="timeline-item" data-delay="0">
+          <div class="timeline-session">Session 1</div>
+          <div class="timeline-content">Marks, stream, city confirmed. <strong>Parental pressure detected.</strong></div>
+        </div>
+        <div class="timeline-item" data-delay="200">
+          <div class="timeline-session">Session 3</div>
+          <div class="timeline-content">Fear signature: <strong>"failure = family shame."</strong> Risk aversion: <em>high.</em></div>
+        </div>
+        <div class="timeline-item" data-delay="400">
+          <div class="timeline-session">Session 5</div>
+          <div class="timeline-content">Financial ceiling added. <strong>Intrinsic motivation: ambiguous.</strong></div>
+        </div>
+        <div class="timeline-item" data-delay="600">
+          <div class="timeline-session">Session 7</div>
+          <div class="timeline-content"><em>Contradiction flagged:</em> wants autonomy, pursuing structured path.</div>
+        </div>
+        <div class="timeline-item" data-delay="800">
+          <div class="timeline-session">Session 9</div>
+          <div class="timeline-content"><em>Behavioral drift:</em> confidence declining across 3 sessions.</div>
+        </div>
+        <div class="timeline-item" data-delay="1000">
+          <div class="timeline-session">Session 11</div>
+          <div class="timeline-content">Trajectory simulation run. <em>MBBS regret probability: 61%.</em><br><strong>"I didn't know it would be that high."</strong></div>
+        </div>
+        <div class="timeline-item" data-delay="1200">
+          <div class="timeline-session">Session 14</div>
+          <div class="timeline-content">Profile is <strong>81% complete.</strong> Nischay's model is more complete than most counselors will ever build.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── UNCERTAINTY ─── -->
+<section id="uncertainty">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Calibrated confidence</div>
+      <h2 class="section-h2">Nischay tells you how certain it is.<br><em>Every time.</em></h2>
+      <p class="section-sub">Most systems give you answers. Nischay gives you answers with their uncertainty attached.</p>
+    </div>
+
+    <div class="uncertainty-grid">
+      <div class="conf-card glass reveal reveal-delay-1">
+        <div class="conf-level">
+          <span class="conf-badge conf-high">High confidence</span>
+        </div>
+        <div class="conf-percent">91%</div>
+        <div class="conf-claim">NIRF Tier-1 CSE median placement, 2024: ₹22–28L</div>
+        <div class="conf-row"><span>Source</span><span>NIRF 2024, 12 institutions</span></div>
+        <div class="conf-row"><span>Variance</span><span>±15% by specific college</span></div>
+        <div class="conf-row"><span>Missing</span><span>Role-level breakdown partial</span></div>
+      </div>
+      <div class="conf-card glass reveal reveal-delay-2">
+        <div class="conf-level">
+          <span class="conf-badge conf-medium">Medium confidence</span>
+        </div>
+        <div class="conf-percent">64%</div>
+        <div class="conf-claim">Your NEET success probability at current trajectory: 23%</div>
+        <div class="conf-row"><span>Source</span><span>NEET 2023 score distribution</span></div>
+        <div class="conf-row"><span>Key driver</span><span>Prep hours self-reported</span></div>
+        <div class="conf-row"><span>To raise</span><span>Verified mock scores → 44%</span></div>
+      </div>
+      <div class="conf-card glass reveal reveal-delay-3">
+        <div class="conf-level">
+          <span class="conf-badge conf-low">Principled uncertainty</span>
+        </div>
+        <div class="conf-percent">38%</div>
+        <div class="conf-claim">UX Design salary, Tier-2 city, Year 3: ₹6–10L</div>
+        <div class="conf-row"><span>Source</span><span>Extrapolated from metro data</span></div>
+        <div class="conf-row"><span>Unknown</span><span>Tier-2 design market depth</span></div>
+        <div class="conf-row"><span>Status</span><span>Building dataset from outcomes</span></div>
+        <div style="margin-top:0.75rem;font-size:0.72rem;color:var(--text-dim);line-height:1.6;font-style:italic">This estimate should be treated as directional, not precise.</div>
+      </div>
+    </div>
+
+    <div class="conf-closer reveal reveal-delay-3">
+      "We know what we don't know. That is, itself, a form of honesty."
+    </div>
+  </div>
+</section>
+
+<!-- ─── BEHAVIORAL DRIFT ─── -->
+<section id="drift">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Behavioral drift detection</div>
+      <h2 class="section-h2">What your decisions look like<br><em>across time — not just in the moment.</em></h2>
+      <p class="section-sub">A single conversation is a data point. Twelve conversations are a pattern.</p>
+    </div>
+
+    <div class="drift-chart-wrap reveal reveal-delay-2">
+      <div class="drift-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#C8933C"></div>Confidence in stated goal</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#EF4444"></div>External pressure</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#F59E0B"></div>Decision consistency</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#7C3AED"></div>Avoidance events</div>
+      </div>
+      <svg id="drift-svg" viewBox="0 0 900 240" preserveAspectRatio="xMidYMid meet">
+        <!-- Grid -->
+        <line x1="60" y1="20" x2="60" y2="200" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        <line x1="60" y1="200" x2="860" y2="200" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        <line x1="60" y1="110" x2="860" y2="110" stroke="rgba(255,255,255,0.03)" stroke-width="1" stroke-dasharray="4 6"/>
+        <!-- X axis labels (sessions) -->
+        <text x="60" y="220" text-anchor="middle" fill="#475569" font-family="JetBrains Mono" font-size="10">S1</text>
+        <text x="193" y="220" text-anchor="middle" fill="#475569" font-family="JetBrains Mono" font-size="10">S2</text>
+        <text x="327" y="220" text-anchor="middle" fill="#475569" font-family="JetBrains Mono" font-size="10">S3</text>
+        <text x="460" y="220" text-anchor="middle" fill="#475569" font-family="JetBrains Mono" font-size="10">S4</text>
+        <text x="594" y="220" text-anchor="middle" fill="#475569" font-family="JetBrains Mono" font-size="10">S5</text>
+        <text x="727" y="220" text-anchor="middle" fill="#475569" font-family="JetBrains Mono" font-size="10">S6</text>
+        <text x="860" y="220" text-anchor="middle" fill="#EF4444" font-family="JetBrains Mono" font-size="10">S7</text>
+        <!-- Confidence line (declining) -->
+        <polyline id="confidence-line" points="60,50 193,55 327,70 460,90 594,115 727,145 860,175"
+          fill="none" stroke="#C8933C" stroke-width="2.5" stroke-linecap="round"
+          stroke-dasharray="800" stroke-dashoffset="800"/>
+        <!-- Pressure line (rising) -->
+        <polyline id="pressure-line" points="60,180 193,170 327,160 460,148 594,130 727,105 860,75"
+          fill="none" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"
+          stroke-dasharray="800" stroke-dashoffset="800"/>
+        <!-- Consistency line (fluctuating decline) -->
+        <polyline id="consistency-line" points="60,80 193,85 327,90 460,100 594,125 727,140 860,165"
+          fill="none" stroke="#F59E0B" stroke-width="2" stroke-dasharray="6 4" stroke-linecap="round"
+          stroke-dashoffset="800"/>
+        <!-- Avoidance markers -->
+        <circle cx="460" cy="148" r="7" fill="rgba(124,58,237,0.2)" stroke="#7C3AED" stroke-width="1.5" opacity="0" id="avoid1"/>
+        <circle cx="594" cy="130" r="7" fill="rgba(124,58,237,0.2)" stroke="#7C3AED" stroke-width="1.5" opacity="0" id="avoid2"/>
+        <circle cx="727" cy="105" r="9" fill="rgba(124,58,237,0.2)" stroke="#7C3AED" stroke-width="1.5" opacity="0" id="avoid3"/>
+        <!-- Drift flag at S7 -->
+        <g id="drift-flag" opacity="0">
+          <rect x="800" y="40" width="60" height="22" rx="4" fill="rgba(239,68,68,0.15)" stroke="rgba(239,68,68,0.4)" stroke-width="1"/>
+          <text x="830" y="55" text-anchor="middle" fill="#EF4444" font-family="JetBrains Mono" font-size="9">[DRIFT]</text>
+          <line x1="860" y1="75" x2="830" y2="62" stroke="rgba(239,68,68,0.3)" stroke-width="1"/>
+        </g>
+        <!-- Data points -->
+        <circle cx="60" cy="50" r="4" fill="#C8933C" opacity="0" class="dp-blue"/>
+        <circle cx="193" cy="55" r="4" fill="#C8933C" opacity="0" class="dp-blue"/>
+        <circle cx="327" cy="70" r="4" fill="#C8933C" opacity="0" class="dp-blue"/>
+        <circle cx="460" cy="90" r="4" fill="#C8933C" opacity="0" class="dp-blue"/>
+        <circle cx="594" cy="115" r="4" fill="#C8933C" opacity="0" class="dp-blue"/>
+        <circle cx="727" cy="145" r="4" fill="#C8933C" opacity="0" class="dp-blue"/>
+        <circle cx="860" cy="175" r="4" fill="#C8933C" opacity="0" class="dp-blue"/>
+      </svg>
+
+      <div class="drift-annotation">
+        <strong>At session 7, Nischay detected that your confidence in your stated goal was declining while external pressure was increasing.</strong> This is a recognized pattern in students who are agreeing with family pressure while privately disagreeing.<br><br>
+        This doesn't mean your stated goal is wrong. It means the decision deserves a closer look before you commit to it.<br>
+        This is what memory is for.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── PARENT ─── -->
+<section id="parent">
+  <div class="section-inner">
+    <div class="parent-content">
+      <h2 class="parent-h2 reveal">For the person reading this<br>over their child's shoulder.</h2>
+
+      <div class="parent-section-title reveal">What Nischay is</div>
+      <p class="parent-body reveal reveal-delay-1">
+        A career intelligence system that models your child's specific situation — their marks, city, financial constraints, learning style, and long-term probability of satisfaction — before a significant decision is made.
+      </p>
+      <p class="parent-body reveal reveal-delay-2" style="margin-top:1rem">
+        It uses real data. It acknowledges what it doesn't know. It tells your child things they may not want to hear, including when a path is statistically unlikely given their profile. Every estimate includes a confidence level and its source.
+      </p>
+
+      <div class="parent-section-title reveal">What Nischay is not</div>
+      <p class="parent-body reveal reveal-delay-1">
+        It is not a system that tells your child to ignore you. It is not a system that optimizes for rebellion. It does not make decisions. It provides information and probability distributions so that decisions — yours and your child's — can be made with better inputs.
+      </p>
+      <p class="parent-body reveal reveal-delay-2" style="margin-top:1rem">
+        Every recommendation shows its data source. Every confidence level shows why. If Nischay doesn't have reliable data, it says so rather than manufacturing confidence.
+      </p>
+      <p class="parent-body reveal reveal-delay-3" style="margin-top:1rem">
+        The goal is not to replace your judgment. The goal is to give your judgment better material to work with.
+      </p>
+
+      <div class="parent-footer reveal">
+        Nischay AI is a career intelligence tool. It does not replace professional counseling, medical advice, or parental judgment. All probability estimates are data-grounded, uncertainty-aware, and should be weighed alongside human context.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FINAL CTA ─── -->
+<section id="final-cta">
+  <div class="section-inner">
+    <h2 class="cta-h2 reveal">
+      Your future has a<br>
+      <em>probability distribution.</em>
+    </h2>
+    <p class="cta-sub reveal reveal-delay-1">Most people never see it. You can.</p>
+    <div class="cta-actions reveal reveal-delay-2">
+      <a href="/app" class="btn-primary">Begin reasoning</a>
+      <a href="#trajectory" class="btn-secondary">See a sample trajectory</a>
+    </div>
+    <div style="margin-top:4rem;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);position:relative;z-index:1" class="reveal reveal-delay-3">
+      Built for the 17-year-old from a Tier-2 city who opened a browser at 11pm looking for an honest answer.
+    </div>
+  </div>
+</section>
+
+<style>
+@keyframes orbitPulse {
+  0%,100% { opacity:0.7; }
+  50% { opacity:1; }
+}
+</style>
+
+<script>
+// ── LOADING ──
+window.addEventListener('load', () => {
+  const fill = document.getElementById('loading-fill');
+  const screen = document.getElementById('loading-screen');
+  fill.style.width = '100%';
+  setTimeout(() => { screen.classList.add('hidden'); }, 1400);
+});
+
+// ── CURSOR ──
+const cur = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+function animateCursor() {
+  cur.style.left = mx + 'px'; cur.style.top = my + 'px';
+  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(animateCursor);
+}
+animateCursor();
+document.querySelectorAll('a, button, input[type=range]').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cur.style.width = '20px'; cur.style.height = '20px';
+    ring.style.width = '50px'; ring.style.height = '50px';
+  });
+  el.addEventListener('mouseleave', () => {
+    cur.style.width = '12px'; cur.style.height = '12px';
+    ring.style.width = '36px'; ring.style.height = '36px';
+  });
+});
+
+// ── NAVBAR ──
+const navbar = document.getElementById('navbar');
+const hero = document.getElementById('hero');
+const navObs = new IntersectionObserver(([e]) => {
+  navbar.classList.toggle('scrolled', !e.isIntersecting);
+}, { threshold: 0.1 });
+navObs.observe(hero);
+
+// ── REVEAL ON SCROLL ──
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+// ── TYPEWRITER ──
+const phrases = [
+  "JEE aspirant.",
+  "NEET dropout.",
+  "Tier-3 college, wondering what's next.",
+  "First in family to question the default.",
+  "Career pivot at 19, no roadmap.",
+  "Choosing between pressure and probability."
+];
+let pIdx = 0, cIdx = 0, deleting = false;
+const tw = document.getElementById('typewriter');
+function typeLoop() {
+  const phrase = phrases[pIdx];
+  if (!deleting) {
+    tw.textContent = phrase.slice(0, cIdx + 1);
+    cIdx++;
+    if (cIdx === phrase.length) {
+      deleting = true;
+      setTimeout(typeLoop, 1800);
+      return;
+    }
+    setTimeout(typeLoop, 70);
+  } else {
+    tw.textContent = phrase.slice(0, cIdx - 1);
+    cIdx--;
+    if (cIdx === 0) {
+      deleting = false;
+      pIdx = (pIdx + 1) % phrases.length;
+    }
+    setTimeout(typeLoop, 35);
+  }
+}
+setTimeout(typeLoop, 2000);
+
+// ── COUNTER ANIMATION ──
+function animateCounter(el, target, suffix, prefix, isDecimal) {
+  let start = 0;
+  const duration = 1800;
+  const step = (timestamp) => {
+    if (!start) start = timestamp;
+    const progress = Math.min((timestamp - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    let val = eased * target;
+    let display;
+    if (isDecimal) display = (val / 10).toFixed(1);
+    else if (target >= 10000) display = Math.round(val).toLocaleString('en-IN');
+    else display = Math.round(val);
+    el.textContent = (prefix || '') + display + (suffix || '');
+    if (progress < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+const counterObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting && !e.target.dataset.animated) {
+      e.target.dataset.animated = 'true';
+      const el = e.target;
+      const target = parseFloat(el.dataset.target);
+      const suffix = el.dataset.suffix || '';
+      const prefix = el.dataset.prefix || '';
+      const isDecimal = el.dataset.decimal === 'true';
+      animateCounter(el, target, suffix, prefix, isDecimal);
+    }
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('[data-target]').forEach(el => counterObs.observe(el));
+
+// ── TRAJECTORY SLIDER ──
+const motSlider = document.getElementById('motivation-slider');
+const finSlider = document.getElementById('financial-slider');
+const prepSlider = document.getElementById('prep-slider');
+const motVal = document.getElementById('motivation-val');
+const finVal = document.getElementById('financial-val');
+const prepVal = document.getElementById('prep-val');
+const mbbsRegret = document.getElementById('mbbs-regret');
+const cseRegret = document.getElementById('cse-regret');
+
+function updateRegret() {
+  const mot = motSlider.value / 100;
+  const fin = finSlider.value / 100;
+  const prep = prepSlider.value / 100;
+  // MBBS: high regret if low motivation, high pressure, low prep
+  const mbbsBase = 61;
+  const mbbsDelta = -(mot * 28) + (fin * 8) - (prep * 12);
+  const mbbsVal = Math.min(88, Math.max(18, Math.round(mbbsBase + mbbsDelta)));
+  // CSE: lower regret generally
+  const cseBase = 24;
+  const cseDelta = (fin * 6) - (prep * 8) - (mot * 4);
+  const cseVal = Math.min(55, Math.max(8, Math.round(cseBase + cseDelta)));
+
+  mbbsRegret.textContent = mbbsVal + '%';
+  cseRegret.textContent = cseVal + '%';
+
+  const mbbsColor = mbbsVal > 50 ? '#EF4444' : mbbsVal > 35 ? '#F59E0B' : '#10B981';
+  const cseColor = cseVal > 40 ? '#EF4444' : cseVal > 25 ? '#F59E0B' : '#10B981';
+  mbbsRegret.style.color = mbbsColor;
+  cseRegret.style.color = cseColor;
+
+  const motLabels = ['Very low','Low','Moderate','High','Very high'];
+  motVal.textContent = motLabels[Math.floor(mot * 4)];
+  const finLabels = ['None','Low','Moderate','High','Severe'];
+  finVal.textContent = finLabels[Math.floor(fin * 4)];
+  const prepHrs = Math.round(1 + prep * 11);
+  prepVal.textContent = prepHrs + ' hrs/day';
+}
+[motSlider, finSlider, prepSlider].forEach(s => s.addEventListener('input', updateRegret));
+
+// ── DRIFT CHART ANIMATION ──
+function animateDriftChart() {
+  const lines = ['confidence-line','pressure-line','consistency-line'];
+  lines.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    setTimeout(() => {
+      el.style.transition = 'stroke-dashoffset 1.8s cubic-bezier(0.4,0,0.2,1)';
+      el.style.strokeDashoffset = '0';
+    }, i * 300);
+  });
+  setTimeout(() => {
+    ['avoid1','avoid2','avoid3'].forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (el) setTimeout(() => { el.style.transition='opacity 0.4s'; el.style.opacity='1'; }, i*200);
+    });
+  }, 1800);
+  setTimeout(() => {
+    const flag = document.getElementById('drift-flag');
+    if (flag) { flag.style.transition='opacity 0.5s'; flag.style.opacity='1'; }
+    document.querySelectorAll('.dp-blue').forEach((el,i) => {
+      setTimeout(()=>{ el.style.transition='opacity 0.3s'; el.style.opacity='1'; }, i*100);
+    });
+  }, 2200);
+}
+const driftObs = new IntersectionObserver(([e]) => {
+  if (e.isIntersecting) { animateDriftChart(); driftObs.disconnect(); }
+}, { threshold: 0.3 });
+const driftSection = document.getElementById('drift');
+if (driftSection) driftObs.observe(driftSection);
+
+// ── MEMORY TIMELINE ──
+const timelineObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const items = e.target.querySelectorAll('.timeline-item');
+      items.forEach((item, i) => {
+        const delay = parseInt(item.dataset.delay || 0);
+        setTimeout(() => item.classList.add('visible'), delay);
+      });
+      timelineObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.2 });
+const memSection = document.getElementById('memory');
+if (memSection) timelineObs.observe(memSection);
+
+// ── AGENT CARD GLOW ──
+document.querySelectorAll('.agent-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const rect = card.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    card.style.setProperty('--mx', x + '%');
+    card.style.setProperty('--my', y + '%');
+  });
+});
+
+// ── PARTICLES ──
+(function initParticles() {
+  const canvas = document.getElementById('particles-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W, H, nodes, edges;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', () => { resize(); build(); });
+
+  function build() {
+    const count = Math.floor((W * H) / 22000);
+    nodes = Array.from({length: count}, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 1.5 + 0.5, pulse: Math.random() * Math.PI * 2
+    }));
+    edges = [];
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i+1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        if (Math.sqrt(dx*dx+dy*dy) < 130) edges.push([i,j]);
+      }
+    }
+  }
+  build();
+
+  let t = 0;
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    t += 0.008;
+    // Update edges periodically
+    if (Math.round(t*100) % 40 === 0) {
+      edges = [];
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i+1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          if (Math.sqrt(dx*dx+dy*dy) < 130) edges.push([i,j]);
+        }
+      }
+    }
+    // Edges
+    edges.forEach(([a,b]) => {
+      const na = nodes[a], nb = nodes[b];
+      const dx = na.x-nb.x, dy = na.y-nb.y;
+      const d = Math.sqrt(dx*dx+dy*dy);
+      const alpha = (1 - d/130) * 0.09;
+      ctx.beginPath();
+      ctx.moveTo(na.x, na.y);
+      ctx.lineTo(nb.x, nb.y);
+      ctx.strokeStyle = `rgba(200,147,60,${alpha})`;
+      ctx.lineWidth = 0.6;
+      ctx.stroke();
+    });
+    // Nodes
+    nodes.forEach(n => {
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0 || n.x > W) n.vx *= -1;
+      if (n.y < 0 || n.y > H) n.vy *= -1;
+      n.pulse += 0.02;
+      const glow = Math.sin(n.pulse) * 0.3 + 0.7;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(200,147,60,${0.22 * glow})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+</body>
+</html>

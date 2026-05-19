@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nischay — Reasoning Interface</title>
+<meta name="description" content="Nischay AI — Adaptive career reasoning and life coaching platform for Indian students">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-void: #07090F; --bg-panel: #0B0E18; --bg-surface: #0F1420; --bg-card: #131928;
+  --accent-cyan: #C8933C; --accent-violet: #6B5DB0; --accent-teal: #5878C8;
+  --accent-danger: #E05C4B; --accent-success: #2EBF8E; --accent-warn: #D4954A;
+  --accent-purple: #6B5DB0; --accent-purple-dim: rgba(107,93,176,0.12);
+  --text-primary: #EDE8DA; --text-secondary: #B0A890; --text-muted: #7A7060; --text-dim: #4A4438;
+  --border-subtle: rgba(255,255,255,0.06); --border-glow: rgba(200,147,60,0.18);
+  --font-display: 'Sora',sans-serif; --font-mono: 'JetBrains Mono',monospace; --font-body: 'DM Sans',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;cursor:none !important}
+body{background:var(--bg-void);color:var(--text-primary);font-family:var(--font-body);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* CUSTOM CURSOR */
+#cursor {
+  position: fixed;
+  width: 12px; height: 12px;
+  background: var(--accent-cyan);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.1s, width 0.2s, height 0.2s, background 0.2s;
+  box-shadow: 0 0 12px var(--accent-cyan);
+  opacity: 0;
+}
+#cursor-ring {
+  position: fixed;
+  width: 36px; height: 36px;
+  border: 1.5px solid rgba(200, 147, 60, 0.6);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99998;
+  transform: translate(-50%, -50%);
+  transition: transform 0.12s ease, width 0.3s, height 0.3s, opacity 0.3s;
+  box-shadow: 0 0 15px rgba(200, 147, 60, 0.15);
+  opacity: 0;
+}
+
+#particles-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* TOP NAVIGATION BAR */
+#top-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 1.5rem; height: 52px; min-height: 52px;
+  background: var(--bg-panel); border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0; z-index: 100;
+}
+.top-nav-left { display: flex; align-items: center; gap: 1.5rem; }
+.top-nav-logo {
+  font-family: var(--font-display); font-weight: 700; font-size: 1rem;
+  color: var(--accent-cyan); text-decoration: none; letter-spacing: -0.02em;
+}
+.top-nav-links { display: flex; gap: 0.25rem; list-style: none; }
+.top-nav-links a {
+  padding: 0.4rem 0.75rem; border-radius: 6px;
+  font-family: var(--font-body); font-size: 0.78rem; font-weight: 500;
+  color: var(--text-dim); text-decoration: none; transition: all 0.2s;
+}
+.top-nav-links a:hover { color: var(--text-primary); background: rgba(255,255,255,0.04); }
+.top-nav-links a.active { color: var(--accent-cyan); background: rgba(200,147,60,0.12); }
+.top-nav-right { display: flex; align-items: center; gap: 0.75rem; }
+.nav-user-badge {
+  font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim);
+  padding: 0.3rem 0.6rem; border-radius: 6px; background: rgba(255,255,255,0.03);
+}
+.btn-nav-signout {
+  padding: 0.35rem 0.85rem; border-radius: 6px; font-size: 0.72rem;
+  background: transparent; color: var(--text-dim); border: 1px solid var(--border-subtle);
+  cursor: pointer; transition: 0.2s; font-family: var(--font-body);
+}
+.btn-nav-signout:hover { color: var(--accent-danger); border-color: rgba(239,68,68,0.3); }
+.mobile-menu-btn {
+  display: none; background: none; border: none; color: var(--text-muted);
+  font-size: 1.2rem; cursor: pointer; padding: 0.3rem;
+}
+
+/* BREADCRUMBS */
+.breadcrumbs {
+  display: flex; align-items: center; gap: 0.4rem;
+  padding: 0.5rem 1.5rem; background: var(--bg-panel);
+  border-bottom: 1px solid rgba(255,255,255,0.03); flex-shrink: 0;
+  position: relative; z-index: 2;
+}
+.breadcrumbs a, .breadcrumbs span {
+  font-family: var(--font-mono); font-size: 0.62rem; text-decoration: none;
+  color: var(--text-dim); transition: color 0.2s;
+}
+.breadcrumbs a:hover { color: var(--accent-cyan); }
+.breadcrumbs .sep { color: var(--text-dim); opacity: 0.4; }
+.breadcrumbs .current { color: var(--text-muted); }
+
+/* APP BODY (sidebar + main) */
+#app-body { display: flex; flex: 1; overflow: hidden; position: relative; z-index: 1; }
+
+/* PAGE TRANSITION OVERLAY */
+#page-transition {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg-void); display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 1rem; opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+#page-transition.active { opacity: 1; pointer-events: all; }
+.transition-ring {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 2px solid transparent; border-top-color: var(--accent-cyan);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.transition-text {
+  font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+
+/* CHAT BUBBLE ANIMATIONS */
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.bubble-user, .bubble-ai, .drift-alert-bubble, .contradiction-bubble {
+  animation: bubbleIn 0.35s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+}
+
+/* STREAMING TEXT CURSOR */
+.streaming-cursor::after {
+  content: '▋'; color: var(--accent-cyan); animation: blink-cursor 0.7s infinite;
+  font-size: 0.9em; margin-left: 1px;
+}
+@keyframes blink-cursor { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* SIDEBAR */
+#sidebar {
+  width: 260px; min-width: 260px;
+  background: var(--bg-panel);
+  border-right: 1px solid rgba(200,147,60,0.08);
+  display: flex; flex-direction: column;
+  padding: 1.25rem;
+  overflow-y: auto;
+  gap: 1.25rem;
+}
+.sidebar-logo {
+  font-family: var(--font-display); font-weight: 700; font-size: 1.2rem;
+  color: var(--accent-cyan); letter-spacing: -0.03em; padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.sidebar-section { }
+.sidebar-label {
+  font-family: var(--font-mono); font-size: 0.58rem; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 0.6rem;
+}
+/* Profile completeness */
+.completeness-wrap { }
+.completeness-bar-bg {
+  height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; margin: 0.4rem 0;
+}
+.completeness-bar {
+  height: 100%; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-violet));
+  border-radius: 2px; transition: width 0.6s ease;
+  box-shadow: 0 0 8px rgba(200,147,60,0.35);
+}
+.completeness-pct {
+  font-family: var(--font-display); font-weight: 700; font-size: 1.3rem;
+  color: var(--accent-cyan);
+}
+.completeness-sub { font-size: 0.72rem; color: var(--text-dim); }
+
+/* Personality radar placeholder */
+.radar-wrap {
+  background: rgba(15,15,32,0.5); border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 0.75rem; padding: 0.75rem; margin-top: 0.4rem;
+}
+.trait-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.4rem;
+}
+.trait-bar-bg { width: 80px; height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; }
+.trait-bar { height: 100%; border-radius: 2px; }
+
+/* Stage badge */
+.stage-badge {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  font-family: var(--font-mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em;
+  background: rgba(200,147,60,0.12); border: 1px solid rgba(200,147,60,0.22); color: var(--accent-teal);
+}
+.stage-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-teal); animation: pulse-dot 2s infinite; }
+@keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+
+/* Agent badge */
+.agent-active {
+  padding: 0.5rem 0.75rem;
+  background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2);
+  border-radius: 0.5rem;
+  font-family: var(--font-mono); font-size: 0.62rem; color: #A78BFA;
+}
+.agent-active-label { color: var(--text-dim); margin-bottom: 0.25rem; }
+
+/* Drift / contradiction */
+.status-pill {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.25rem 0.65rem; border-radius: 9999px;
+  font-family: var(--font-mono); font-size: 0.6rem; text-transform: uppercase;
+}
+.status-stable { background: rgba(16,185,129,0.1); color: var(--accent-success); border: 1px solid rgba(16,185,129,0.2); }
+.status-drift { background: rgba(239,68,68,0.1); color: var(--accent-danger); border: 1px solid rgba(239,68,68,0.2); }
+.status-warn { background: rgba(245,158,11,0.1); color: var(--accent-warn); border: 1px solid rgba(245,158,11,0.2); }
+
+.contra-gauge {
+  display: flex; align-items: center; gap: 0.75rem; margin-top: 0.4rem;
+}
+.gauge-num {
+  font-family: var(--font-display); font-weight: 700; font-size: 1.5rem;
+}
+.gauge-bar-bg { flex:1; height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; }
+.gauge-bar { height: 100%; border-radius: 2px; transition: width 0.5s; }
+
+.sidebar-actions { margin-top: auto; display: flex; flex-direction: column; gap: 0.5rem; }
+.btn-sidebar {
+  padding: 0.6rem; border-radius: 0.5rem; font-family: var(--font-display); font-weight: 600;
+  font-size: 0.78rem; text-align: center; cursor: pointer; border: none; transition: 0.2s;
+}
+.btn-new { background: rgba(200,147,60,0.12); color: var(--accent-cyan); border: 1px solid rgba(200,147,60,0.22); }
+.btn-new:hover { background: rgba(200,147,60,0.22); }
+.btn-signout { background: transparent; color: var(--text-dim); border: 1px solid var(--border-subtle); }
+.btn-signout:hover { color: var(--text-muted); }
+
+/* MAIN AREA */
+#main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+
+/* TABS */
+.tabs {
+  display: flex; border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-panel); padding: 0 1.5rem; gap: 0; flex-shrink: 0;
+}
+.tab {
+  padding: 0.85rem 1.25rem; font-family: var(--font-display); font-size: 0.82rem;
+  color: var(--text-dim); cursor: pointer; border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s; white-space: nowrap;
+}
+.tab.active { color: var(--accent-cyan); border-color: var(--accent-cyan); }
+.tab:hover:not(.active) { color: var(--text-muted); }
+
+/* TAB PANELS */
+.tab-panel { display: none; flex: 1; overflow: hidden; }
+.tab-panel.active { display: flex; }
+
+/* ── REASONING TAB ── */
+#panel-reasoning { flex-direction: column; }
+.chat-area {
+  flex: 1; overflow-y: auto; padding: 1.5rem 2rem;
+  display: flex; flex-direction: column; gap: 1rem;
+}
+.chat-area::-webkit-scrollbar { width: 4px; }
+.chat-area::-webkit-scrollbar-track { background: transparent; }
+.chat-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 2px; }
+
+.bubble-user {
+  align-self: flex-end; max-width: 60%;
+  background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.22);
+  border-radius: 1rem 1rem 0.25rem 1rem;
+  padding: 0.9rem 1.1rem; font-size: 0.9rem; line-height: 1.7; color: var(--text-primary);
+}
+.bubble-ai {
+  max-width: 72%;
+  background: rgba(200,147,60,0.04); border: 1px solid rgba(200,147,60,0.15);
+  border-radius: 1rem 1rem 1rem 0.25rem;
+  padding: 1rem 1.1rem 0.75rem; font-size: 0.88rem; line-height: 1.8; color: var(--text-primary);
+}
+.response-meta {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 0.5rem; padding-bottom: 0.4rem; border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.agent-label {
+  font-family: var(--font-mono); font-size: 0.58rem; color: #6B5DB0;
+  text-transform: uppercase; letter-spacing: 0.12em;
+}
+.confidence-label {
+  font-family: var(--font-mono); font-size: 0.58rem; color: var(--text-dim);
+}
+.drift-alert-bubble {
+  background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2);
+  border-left: 3px solid var(--accent-danger); border-radius: 0.75rem;
+  padding: 0.75rem 1rem; font-size: 0.8rem; color: #FECACA; line-height: 1.65;
+}
+.contradiction-bubble {
+  background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.2);
+  border-left: 3px solid var(--accent-warn); border-radius: 0.75rem;
+  padding: 0.75rem 1rem; font-size: 0.8rem; color: #FDE68A; line-height: 1.65;
+}
+.memory-update {
+  display: flex; align-items: flex-start; gap: 0.6rem;
+  padding: 0.5rem 0.75rem; background: rgba(15,15,32,0.5);
+  border: 1px solid rgba(255,255,255,0.04); border-radius: 0.5rem;
+  font-size: 0.72rem; color: var(--text-muted); margin-top: 0.5rem;
+}
+.memory-icon { font-size: 0.8rem; }
+
+.chat-input-area {
+  padding: 1rem 2rem 1.25rem;
+  background: var(--bg-panel); border-top: 1px solid var(--border-subtle);
+  display: flex; gap: 0.75rem; align-items: flex-end; flex-shrink: 0;
+}
+.chat-input {
+  flex: 1; background: rgba(15,15,32,0.8); border: 1px solid rgba(200,147,60,0.18);
+  border-radius: 0.75rem; padding: 0.75rem 1rem; color: var(--text-primary);
+  font-family: var(--font-body); font-size: 0.88rem; resize: none;
+  outline: none; min-height: 48px; max-height: 120px;
+  transition: border-color 0.2s;
+}
+.chat-input:focus { border-color: rgba(200,147,60,0.35); }
+.chat-input::placeholder { color: var(--text-dim); }
+.chat-send {
+  padding: 0.7rem 1.5rem; background: var(--accent-cyan); color: var(--bg-void);
+  border: none; border-radius: 9999px; font-family: var(--font-display); font-weight: 600;
+  font-size: 0.82rem; cursor: pointer; transition: box-shadow 0.2s, transform 0.15s;
+  white-space: nowrap; align-self: flex-end;
+}
+.chat-send:hover { box-shadow: 0 0 20px rgba(200,147,60,0.4); transform: scale(1.02); }
+
+/* Typing indicator */
+.typing-indicator {
+  display: flex; gap: 0.3rem; align-items: center; padding: 0.75rem 1.1rem;
+  background: rgba(200,147,60,0.04); border: 1px solid rgba(200,147,60,0.15);
+  border-radius: 1rem 1rem 1rem 0.25rem; width: fit-content;
+}
+.typing-dot { width:7px;height:7px;border-radius:50%;background:rgba(200,147,60,0.4); animation:typingAnim 1.2s infinite; }
+.typing-dot:nth-child(2){animation-delay:0.2s}
+.typing-dot:nth-child(3){animation-delay:0.4s}
+@keyframes typingAnim{0%,100%{opacity:0.3;transform:scale(0.8)}50%{opacity:1;transform:scale(1)}}
+
+/* ── TRAJECTORY TAB ── */
+#panel-trajectory { flex-direction: column; overflow-y: auto; padding: 2rem; gap: 1.5rem; }
+.traj-controls {
+  display: flex; gap: 0.75rem; flex-wrap: wrap;
+}
+.traj-btn {
+  padding: 0.5rem 1rem; border-radius: 9999px;
+  font-family: var(--font-mono); font-size: 0.65rem; cursor: pointer;
+  border: 1px solid rgba(200,147,60,0.22); background: rgba(200,147,60,0.06);
+  color: var(--accent-teal); transition: 0.2s; text-transform: uppercase; letter-spacing: 0.08em;
+}
+.traj-btn.active { background: rgba(200,147,60,0.18); border-color: var(--accent-cyan); color: var(--accent-cyan); }
+.traj-btn:hover:not(.active) { background: rgba(200,147,60,0.12); }
+
+.traj-charts-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;
+}
+.traj-chart-card {
+  background: rgba(15,15,32,0.7); border: 1px solid rgba(200,147,60,0.15);
+  border-radius: 1.25rem; padding: 1.25rem;
+}
+.traj-chart-title {
+  font-family: var(--font-display); font-weight: 600; font-size: 0.82rem;
+  color: var(--text-secondary); margin-bottom: 0.75rem;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.traj-chart-title span {
+  font-family: var(--font-mono); font-size: 0.6rem; color: var(--text-dim);
+}
+.traj-chart-area { height: 120px; position: relative; }
+.traj-svg { width: 100%; height: 100%; }
+
+/* ── DASHBOARD TAB ── */
+#panel-dashboard { flex-direction: column; overflow-y: auto; padding: 2rem; gap: 1.5rem; }
+.dash-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; }
+.dash-card {
+  background: rgba(15,15,32,0.6); border: 1px solid rgba(200,147,60,0.12);
+  border-radius: 1.25rem; padding: 1.25rem;
+}
+.dash-card-label {
+  font-family: var(--font-mono); font-size: 0.6rem; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.75rem;
+}
+.career-bar-row {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 0.5rem; font-size: 0.78rem;
+}
+.career-bar-name { color: var(--text-secondary); }
+.career-bar-pct { font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-dim); }
+.career-bar-bg { height: 5px; background: rgba(255,255,255,0.05); border-radius: 3px; margin-bottom: 0.75rem; overflow: hidden; }
+.career-bar-fill { height: 100%; border-radius: 3px; }
+
+/* cluster */
+.cluster-badge {
+  padding: 0.5rem 0.85rem; border-radius: 0.5rem;
+  font-family: var(--font-mono); font-size: 0.65rem; line-height: 1.6;
+  background: rgba(200,147,60,0.06); border: 1px solid rgba(200,147,60,0.16);
+  color: var(--text-muted); margin-bottom: 0.75rem;
+}
+.cluster-stat { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.3rem; }
+.cluster-stat strong { color: var(--text-primary); }
+
+/* ── MEMORY TAB ── */
+#panel-memory { flex-direction: column; overflow-y: auto; padding: 2rem; gap: 1.25rem; }
+.memory-filters { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.filter-pill {
+  padding: 0.25rem 0.75rem; border-radius: 9999px;
+  font-family: var(--font-mono); font-size: 0.6rem; cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.08); color: var(--text-dim);
+  transition: 0.2s; text-transform: uppercase; letter-spacing: 0.08em;
+}
+.filter-pill.active { background: rgba(200,147,60,0.12); border-color: rgba(200,147,60,0.3); color: var(--accent-teal); }
+.memory-items { display: flex; flex-direction: column; gap: 0.5rem; }
+.memory-row {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  padding: 0.65rem 1rem; border-radius: 0.75rem;
+  background: rgba(15,15,32,0.4); border: 1px solid rgba(255,255,255,0.04);
+}
+.memory-type-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 0.35rem; flex-shrink: 0; }
+.memory-row-content { flex:1; font-size: 0.8rem; color: var(--text-muted); line-height: 1.55; }
+.memory-row-meta { font-family: var(--font-mono); font-size: 0.6rem; color: var(--text-dim); white-space: nowrap; }
+.memory-row.type-fear { border-left: 2px solid var(--accent-danger); }
+.memory-row.type-contradiction { border-left: 2px solid var(--accent-warn); }
+.memory-row.type-goal { border-left: 2px solid var(--accent-success); }
+.memory-row.type-preference { border-left: 2px solid var(--accent-cyan); }
+.memory-row.type-pattern { border-left: 2px solid var(--accent-violet); }
+.memory-row.type-constraint { border-left: 2px solid var(--text-dim); }
+
+/* drift sub-section */
+.drift-log-section {
+  background: rgba(239,68,68,0.03); border: 1px solid rgba(239,68,68,0.12);
+  border-radius: 1rem; padding: 1.25rem;
+}
+.drift-log-title {
+  font-family: var(--font-mono); font-size: 0.62rem; color: var(--accent-danger);
+  text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 1rem;
+}
+.drift-log-row {
+  display: flex; gap: 1rem; font-size: 0.78rem; padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03); color: var(--text-muted);
+}
+.drift-log-session { font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-dim); min-width: 60px; }
+
+/* ── RESUME TAB ── */
+#panel-resume { flex-direction: column; padding: 2rem; gap: 1.5rem; overflow-y: auto; }
+.upload-zone {
+  border: 2px dashed rgba(200,147,60,0.2); border-radius: 1.25rem;
+  padding: 3rem 2rem; text-align: center; cursor: pointer; transition: 0.3s;
+}
+.upload-zone:hover { border-color: rgba(200,147,60,0.35); background: rgba(200,147,60,0.04); }
+.upload-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+.upload-title { font-family: var(--font-display); font-weight: 600; font-size: 1rem; color: var(--text-secondary); margin-bottom: 0.4rem; }
+.upload-sub { font-size: 0.8rem; color: var(--text-dim); }
+
+.resume-feedback { display: flex; flex-direction: column; gap: 0.75rem; }
+.feedback-item {
+  padding: 1rem 1.25rem; border-radius: 0.75rem;
+  background: rgba(15,15,32,0.5);
+}
+.feedback-item.high { border-left: 3px solid var(--accent-danger); }
+.feedback-item.medium { border-left: 3px solid var(--accent-warn); }
+.feedback-item.low { border-left: 3px solid var(--text-dim); }
+.feedback-priority {
+  font-family: var(--font-mono); font-size: 0.6rem; text-transform: uppercase;
+  letter-spacing: 0.1em; margin-bottom: 0.5rem;
+}
+.feedback-item.high .feedback-priority { color: var(--accent-danger); }
+.feedback-item.medium .feedback-priority { color: var(--accent-warn); }
+.feedback-item.low .feedback-priority { color: var(--text-dim); }
+.feedback-before { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 0.25rem; font-family: var(--font-mono); }
+.feedback-before s { color: var(--accent-danger); text-decoration-color: rgba(239,68,68,0.5); }
+.feedback-after { font-size: 0.78rem; color: var(--accent-success); margin-bottom: 0.3rem; }
+.feedback-why { font-size: 0.75rem; color: var(--text-muted); }
+
+/* scrollbar global */
+*::-webkit-scrollbar { width: 4px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 2px; }
+
+@media(max-width:768px){
+  #sidebar{display:none}
+  .dash-grid{grid-template-columns:1fr}
+  .traj-charts-grid{grid-template-columns:1fr}
+  .top-nav-links { display:none; }
+  .top-nav-links.open { display:flex; position:absolute; top:52px; left:0; right:0; background:var(--bg-panel); flex-direction:column; padding:0.75rem; border-bottom:1px solid var(--border-subtle); gap:0.25rem; z-index:101; }
+  .top-nav-links.open a { padding:0.6rem 1rem; }
+  .mobile-menu-btn { display:block; }
+  .breadcrumbs { padding: 0.5rem 1rem; }
+}
+
+/* AUTH MODAL */
+#auth-overlay {
+  position: fixed; inset: 0; background: rgba(5,5,15,0.95); backdrop-filter: blur(12px);
+  z-index: 10000; display: none; align-items: center; justify-content: center;
+}
+.auth-card {
+  width: 380px; padding: 2.5rem; background: var(--bg-panel); border: 1px solid var(--border-glow);
+  border-radius: 1.5rem; box-shadow: 0 0 60px rgba(200,147,60,0.12);
+}
+.auth-title { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--accent-cyan); }
+.auth-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 2rem; }
+.auth-input-group { margin-bottom: 1.25rem; }
+.auth-label { font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.5rem; display: block; }
+.auth-input {
+  width: 100%; padding: 0.85rem 1rem; background: rgba(15,15,32,0.8); border: 1px solid var(--border-subtle);
+  border-radius: 0.75rem; color: var(--text-primary); font-family: var(--font-body); font-size: 0.9rem;
+  outline: none; transition: 0.2s;
+}
+.auth-input:focus { border-color: var(--accent-cyan); box-shadow: 0 0 12px rgba(200,147,60,0.12); }
+.auth-btn {
+  width: 100%; padding: 0.9rem; background: var(--accent-cyan); color: var(--bg-void); border: none;
+  border-radius: var(--radius-pill); font-family: var(--font-display); font-weight: 700; cursor: pointer;
+  margin-top: 1rem; transition: 0.3s;
+}
+.auth-btn:hover { box-shadow: 0 0 24px rgba(200,147,60,0.4); transform: scale(1.02); }
+.auth-toggle { margin-top: 1.5rem; text-align: center; font-size: 0.8rem; color: var(--text-dim); }
+.auth-toggle span { color: var(--accent-teal); cursor: pointer; text-decoration: underline; }
+#auth-error { color: var(--accent-danger); font-size: 0.75rem; margin-top: 1rem; text-align: center; min-height: 1em; }
+</style>
+</head>
+<body>
+<canvas id="particles-canvas"></canvas>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- PAGE TRANSITION OVERLAY -->
+<div id="page-transition">
+  <div class="transition-ring"></div>
+  <div class="transition-text">Initializing reasoning system...</div>
+</div>
+
+<!-- TOP NAVIGATION -->
+<nav id="top-nav">
+  <div class="top-nav-left">
+    <a href="/" class="top-nav-logo">Nischay</a>
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">☰</button>
+    <ul class="top-nav-links" id="nav-links">
+      <li><a href="#" class="active" onclick="navTo('reasoning',this,event)">Chat</a></li>
+      <li><a href="#" onclick="navTo('dashboard',this,event)">Dashboard</a></li>
+      <li><a href="#" onclick="navTo('trajectory',this,event)">Trajectory</a></li>
+      <li><a href="#" onclick="navTo('memory',this,event)">Memory</a></li>
+      <li><a href="#" onclick="navTo('resume',this,event)">Resume</a></li>
+    </ul>
+  </div>
+  <div class="top-nav-right">
+    <span class="nav-user-badge" id="nav-user-name"></span>
+    <button class="btn-nav-signout" onclick="logout()">Sign out</button>
+  </div>
+</nav>
+
+<!-- BREADCRUMBS -->
+<div class="breadcrumbs" id="breadcrumbs">
+  <a href="/">Home</a>
+  <span class="sep">›</span>
+  <a href="/app">Dashboard</a>
+  <span class="sep">›</span>
+  <span class="current" id="breadcrumb-current">Chat</span>
+</div>
+
+<!-- APP BODY -->
+<div id="app-body">
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <a href="/" class="sidebar-logo" style="text-decoration: none;">Nischay</a>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Profile completeness</div>
+    <div class="completeness-pct">0%</div>
+    <div class="completeness-bar-bg"><div class="completeness-bar" style="width:0%"></div></div>
+    <div class="completeness-sub">0 fields captured · 21 remaining</div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Personality signals</div>
+    <div class="radar-wrap">
+      <div class="trait-row">
+        <span>Risk tolerance</span>
+        <div class="trait-bar-bg"><div class="trait-bar" style="width:0%;background:#E05C4B"></div></div>
+        <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-dim)">—</span>
+      </div>
+      <div class="trait-row">
+        <span>Intrinsic motivation</span>
+        <div class="trait-bar-bg"><div class="trait-bar" style="width:0%;background:#D4954A"></div></div>
+        <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-dim)">—</span>
+      </div>
+      <div class="trait-row">
+        <span>Analytical style</span>
+        <div class="trait-bar-bg"><div class="trait-bar" style="width:0%;background:#2EBF8E"></div></div>
+        <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-dim)">—</span>
+      </div>
+      <div class="trait-row" style="margin-bottom:0">
+        <span>Conscientiousness</span>
+        <div class="trait-bar-bg"><div class="trait-bar" style="width:0%;background:#C8933C"></div></div>
+        <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-dim)">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Conversation stage</div>
+    <div class="stage-badge" id="sidebar-stage"><div class="stage-dot"></div>Exploration</div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Active agent</div>
+    <div class="agent-active">
+      <div class="agent-active-label">// currently running</div>
+      Profile Agent
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Behavioral drift</div>
+    <div id="sidebar-drift-pill" class="status-pill status-stable">✔ Stable</div>
+    <div id="sidebar-drift-text" style="font-size:0.7rem;color:var(--text-dim);margin-top:0.35rem;line-height:1.5">No anomalies detected in reasoning path.</div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Contradiction score</div>
+    <div class="contra-gauge">
+      <div class="gauge-num" id="sidebar-contra-score" style="color:var(--accent-success)">0</div>
+      <div class="gauge-bar-bg"><div class="gauge-bar" id="sidebar-contra-bar" style="width:0%;background:linear-gradient(90deg,#2EBF8E,#D4954A)"></div></div>
+    </div>
+    <div style="font-size:0.68rem;color:var(--text-dim);margin-top:0.25rem">Internal/External alignment score.</div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Memory</div>
+    <div id="sidebar-memory-count" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted)">0 insights stored</div>
+  </div>
+
+  <div class="sidebar-actions">
+    <button class="btn-sidebar btn-new" onclick="resetChat()">New session</button>
+    <a href="#" class="btn-sidebar btn-signout" style="text-decoration: none; display: block;" onclick="logout()">Sign out</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('reasoning',this)">Reasoning</div>
+    <div class="tab" onclick="switchTab('trajectory',this)">Trajectory Simulation</div>
+    <div class="tab" onclick="switchTab('dashboard',this)">Intelligence Dashboard</div>
+    <div class="tab" onclick="switchTab('memory',this)">Memory Log</div>
+    <div class="tab" onclick="switchTab('resume',this)">Resume Analysis</div>
+  </div>
+
+  <!-- REASONING PANEL -->
+  <div class="tab-panel active" id="panel-reasoning">
+    <div class="chat-area" id="chat-area">
+      <div class="bubble-ai">
+        <div class="response-meta">
+          <span class="agent-label">Profile Agent</span>
+          <span class="confidence-label">Confidence: —</span>
+        </div>
+        I'm Nischay — your AI career and life coach. Tell me about your situation, and I'll help you see the probability distribution of your future before you commit years to it.<br><br>
+        What's on your mind?
+      </div>
+    </div>
+
+    <div class="chat-input-area">
+      <textarea class="chat-input" id="chat-input" placeholder="Tell Nischay something true about your situation..." rows="1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"></textarea>
+      <button class="chat-send" onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <!-- TRAJECTORY PANEL -->
+  <div class="tab-panel" id="panel-trajectory">
+    <div style="font-family:var(--font-display);font-weight:700;font-size:1.3rem;letter-spacing:-0.02em">Trajectory Simulation</div>
+    <div style="font-size:0.85rem;color:var(--text-muted)">Select 1–3 career paths. See 10-year projections. Adjust inputs and watch the distribution change.</div>
+
+    <div class="traj-controls" id="traj-buttons">
+      <div class="traj-btn" onclick="toggleTraj('MBBS', this)">MBBS</div>
+      <div class="traj-btn" onclick="toggleTraj('CSE', this)">B.Tech CSE</div>
+      <div class="traj-btn" onclick="toggleTraj('CA', this)">B.Com + CA</div>
+      <div class="traj-btn" onclick="toggleTraj('DES', this)">B.Des</div>
+      <div class="traj-btn" onclick="toggleTraj('MBA', this)">BBA + MBA</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+      <div>
+        <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:0.6rem">Intrinsic Motivation</div>
+        <input type="range" id="slider-motivation" min="0" max="100" value="50" style="width:100%" oninput="updateTraj()">
+        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.6rem;color:var(--text-dim);margin-top:0.2rem">
+          <span>Low</span><span>High</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:0.6rem">Financial Pressure</div>
+        <input type="range" id="slider-pressure" min="0" max="100" value="30" style="width:100%" oninput="updateTraj()">
+        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.6rem;color:var(--text-dim);margin-top:0.2rem">
+          <span>None</span><span>Severe</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="traj-charts-grid">
+      <div class="traj-chart-card">
+        <div class="traj-chart-title">Income Trajectory <span>₹ LPA, years 1–10</span></div>
+        <div class="traj-chart-area" id="chart-income">
+          <svg class="traj-svg" viewBox="0 0 400 120" id="svg-income">
+            <text x="10" y="115" fill="#4A4438" font-family="JetBrains Mono" font-size="8">Y1</text>
+            <text x="200" y="115" fill="#4A4438" font-family="JetBrains Mono" font-size="8">Y5</text>
+            <text x="380" y="115" fill="#4A4438" font-family="JetBrains Mono" font-size="8">Y10</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="traj-chart-card">
+        <div class="traj-chart-title">Satisfaction Probability <span>% over 10 years</span></div>
+        <div class="traj-chart-area" id="chart-satisfaction">
+          <svg class="traj-svg" viewBox="0 0 400 120" id="svg-satisfaction">
+            <text x="10" y="115" fill="#4A4438" font-family="JetBrains Mono" font-size="8">Y1</text>
+            <text x="200" y="115" fill="#4A4438" font-family="JetBrains Mono" font-size="8">Y5</text>
+            <text x="380" y="115" fill="#4A4438" font-family="JetBrains Mono" font-size="8">Y10</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="traj-chart-card">
+        <div class="traj-chart-title">Burnout Probability <span>% by year</span></div>
+        <div class="traj-chart-area" id="chart-burnout">
+          <svg class="traj-svg" viewBox="0 0 400 120" id="svg-burnout">
+            <text x="10" y="115" fill="#4A4438" font-family="JetBrains Mono" font-size="8">Y1</text>
+            <text x="380" y="115" fill="#4A4438" font-family="JetBrains Mono" font-size="8">Y10</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="traj-chart-card">
+        <div class="traj-chart-title">Autonomy Level <span>1–10 scale</span></div>
+        <div class="traj-chart-area" id="chart-autonomy">
+          <svg class="traj-svg" viewBox="0 0 400 120" id="svg-autonomy">
+            <text x="10" y="115" fill="#4A4438" font-family="JetBrains Mono" font-size="8">Y1</text>
+            <text x="380" y="115" fill="#4A4438" font-family="JetBrains Mono" font-size="8">Y10</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Regret summary -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+      <div style="background:rgba(224,92,75,0.05);border:1px solid rgba(224,92,75,0.15);border-radius:1rem;padding:1.25rem;text-align:center">
+        <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem">Regret Probability (Current Path)</div>
+        <div id="traj-prob-1" style="font-family:var(--font-display);font-weight:800;font-size:2.5rem;color:#4A4438;letter-spacing:-0.04em">—</div>
+        <div id="traj-label-1" style="font-size:0.72rem;color:var(--text-dim);margin-top:0.3rem">Select a career path</div>
+      </div>
+      <div style="background:rgba(46,191,142,0.05);border:1px solid rgba(46,191,142,0.15);border-radius:1rem;padding:1.25rem;text-align:center">
+        <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem">Regret Probability (Alternative)</div>
+        <div id="traj-prob-2" style="font-family:var(--font-display);font-weight:800;font-size:2.5rem;color:#4A4438;letter-spacing:-0.04em">—</div>
+        <div id="traj-label-2" style="font-size:0.72rem;color:var(--text-dim);margin-top:0.3rem">Select 2nd path to compare</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD PANEL -->
+  <div class="tab-panel" id="panel-dashboard">
+    <div style="font-family:var(--font-display);font-weight:700;font-size:1.3rem;letter-spacing:-0.02em">Intelligence Dashboard</div>
+    <div class="dash-grid">
+      <div class="dash-card" style="grid-column:1/3">
+        <div class="dash-card-label">Career rankings — profile fit score</div>
+        <div id="dash-rankings" style="color:var(--text-dim);font-size:0.8rem;text-align:center;padding:2rem">No career simulations run yet.</div>
+      </div>
+
+      <div class="dash-card">
+        <div class="dash-card-label">Student cluster</div>
+        <div id="dash-cluster" style="color:var(--text-dim);font-size:0.8rem;text-align:center;padding:1rem">Undetermined cluster.</div>
+      </div>
+
+      <div class="dash-card">
+        <div class="dash-card-label">Dropout / regret risk</div>
+        <div id="dash-risk-val" style="font-family:var(--font-display);font-weight:800;font-size:2rem;color:var(--text-dim);letter-spacing:-0.03em;margin-bottom:0.5rem">0%</div>
+        <div id="dash-risk-text" style="font-size:0.75rem;color:var(--text-muted);line-height:1.6">No simulation data available.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MEMORY PANEL -->
+  <div class="tab-panel" id="panel-memory">
+    <div style="font-family:var(--font-display);font-weight:700;font-size:1.3rem;letter-spacing:-0.02em">Memory Log</div>
+    <div class="memory-filters">
+      <div class="filter-pill active">All</div>
+      <div class="filter-pill">Fear</div>
+      <div class="filter-pill">Contradiction</div>
+      <div class="filter-pill">Goal</div>
+      <div class="filter-pill">Preference</div>
+      <div class="filter-pill">Pattern</div>
+      <div class="filter-pill">Constraint</div>
+    </div>
+
+    <div class="memory-items" id="memory-items">
+      <div style="color:var(--text-dim);font-size:0.85rem;text-align:center;padding:3rem">
+        Your memory is a blank slate. Start chatting with Nischay to store insights.
+      </div>
+    </div>
+
+    <div id="drift-log-container" class="drift-log-section" style="display:none">
+      <div class="drift-log-title">⚠ Behavioral drift log</div>
+      <div id="drift-log-rows"></div>
+    </div>
+  </div>
+
+  <!-- RESUME PANEL -->
+  <div class="tab-panel" id="panel-resume">
+    <div style="font-family:var(--font-display);font-weight:700;font-size:1.3rem;letter-spacing:-0.02em">Resume Analysis</div>
+
+    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+      <div class="upload-icon">📄</div>
+      <div class="upload-title">Drop your resume here</div>
+      <div class="upload-sub">PDF or TXT · Recruiter-level feedback · ATS gap analysis</div>
+      <input type="file" id="file-input" style="display:none" accept=".pdf,.txt" onchange="handleFileUpload(this)">
+    </div>
+
+    <div id="resume-feedback-label" style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.12em">Sample feedback — what you'd see</div>
+
+    <div class="resume-feedback" id="resume-feedback-list">
+      <div style="color:var(--text-dim);font-size:0.85rem;text-align:center;padding:3rem">
+        No feedback yet. Upload your resume to begin.
+      </div>
+    </div>
+  </div>
+</div>
+</div> <!-- close #app-body -->
+
+  <!-- AUTH OVERLAY -->
+  <div id="auth-overlay">
+    <div class="auth-card">
+      <div id="login-view">
+        <h2 class="auth-title">Welcome back</h2>
+        <p class="auth-sub">Access your reasoning interface.</p>
+        <div class="auth-input-group">
+          <label class="auth-label">Email address</label>
+          <input type="email" id="login-email" class="auth-input" placeholder="name@example.com">
+        </div>
+        <div class="auth-input-group">
+          <label class="auth-label">Password</label>
+          <input type="password" id="login-pass" class="auth-input" placeholder="••••••••">
+        </div>
+        <button class="auth-btn" onclick="handleAuth('login')">Sign In</button>
+        <div class="auth-toggle">New here? <span onclick="toggleAuth(true)">Create account</span></div>
+      </div>
+
+      <div id="register-view" style="display:none">
+        <h2 class="auth-title">Create account</h2>
+        <p class="auth-sub">Start your career trajectory simulation.</p>
+        <div class="auth-input-group">
+          <label class="auth-label">Full Name</label>
+          <input type="text" id="reg-name" class="auth-input" placeholder="Your Name">
+        </div>
+        <div class="auth-input-group">
+          <label class="auth-label">Email address</label>
+          <input type="email" id="reg-email" class="auth-input" placeholder="name@example.com">
+        </div>
+        <div class="auth-input-group">
+          <label class="auth-label">Password</label>
+          <input type="password" id="reg-pass" class="auth-input" placeholder="••••••••">
+        </div>
+        <button class="auth-btn" onclick="handleAuth('register')">Get Started</button>
+        <div class="auth-toggle">Already have an account? <span onclick="toggleAuth(false)">Sign in</span></div>
+      </div>
+      <div id="auth-error"></div>
+      <div id="api-status" style="margin-top:0.6rem;font-size:0.72rem;color:var(--text-dim);text-align:center"></div>
+    </div>
+  </div>
+
+<script>
+let sessionId = localStorage.getItem('nischay_session_id');
+const API_BASE = resolveApiBase();
+let currentTab = 'reasoning';
+
+function resolveApiBase() {
+  const params = new URLSearchParams(window.location.search);
+  const override = params.get('apiBase');
+  if (override) {
+    localStorage.setItem('nischay_api_base', override);
+    return override.replace(/\/$/, '');
+  }
+
+  const saved = localStorage.getItem('nischay_api_base');
+  if (saved) return saved.replace(/\/$/, '');
+
+  if (window.location.protocol === 'file:') {
+    return 'http://localhost:8001/api/v1';
+  }
+
+  if (
+    window.location.origin.includes('localhost:') ||
+    window.location.origin.includes('127.0.0.1:')
+  ) {
+    return '/api/v1';
+  }
+
+  return 'http://localhost:8001/api/v1';
+}
+
+async function checkApiHealth() {
+  const statusEl = document.getElementById('api-status');
+  if (!statusEl) return true;
+  try {
+    const response = await fetch(`${API_BASE}/health`);
+    if (!response.ok) throw new Error('Health check failed');
+    statusEl.textContent = '';
+    return true;
+  } catch (err) {
+    statusEl.textContent = 'Backend not reachable. Start the API server and refresh.';
+    return false;
+  }
+}
+
+async function apiCall(path, options = {}) {
+  const token = localStorage.getItem('nischay_token');
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    ...options.headers
+  };
+
+  const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  if (response.status === 401) {
+    if (!path.startsWith('/auth/')) {
+      localStorage.removeItem('nischay_token');
+      localStorage.removeItem('nischay_student_id');
+      localStorage.removeItem('nischay_session_id');
+      showAuth();
+    }
+    const err = await response.json().catch(() => ({ detail: 'Unauthorized' }));
+    throw new Error(err.detail || 'Session expired. Please sign in again.');
+  }
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ detail: 'API request failed' }));
+    throw new Error(err.detail || 'API request failed');
+  }
+  return response.json();
+}
+
+/* ── NAVIGATION SYSTEM ── */
+const tabLabels = {
+  reasoning: 'Chat', dashboard: 'Dashboard', trajectory: 'Trajectory',
+  memory: 'Memory Log', resume: 'Resume Analysis'
+};
+
+function navTo(name, el, e) {
+  if (e) e.preventDefault();
+  if (name === currentTab) return;
+
+  const overlay = document.getElementById('page-transition');
+  overlay.classList.add('active');
+
+  setTimeout(() => {
+    switchTab(name, el);
+    currentTab = name;
+
+    if (name === 'trajectory') updateTraj();
+    if (name === 'dashboard') loadDashboard();
+
+    document.getElementById('breadcrumb-current').textContent = tabLabels[name] || name;
+
+    document.querySelectorAll('#nav-links a').forEach(a => a.classList.remove('active'));
+    if (el) el.classList.add('active');
+
+    const mobileLinks = document.getElementById('nav-links');
+    if (mobileLinks.classList.contains('open')) mobileLinks.classList.remove('open');
+
+    setTimeout(() => overlay.classList.remove('active'), 250);
+  }, 200);
+}
+
+async function loadDashboard() {
+  console.log('Dashboard update triggered');
+  // Future: Fetch career rankings and student cluster from backend
+}
+
+function toggleMobileMenu() {
+  document.getElementById('nav-links').classList.toggle('open');
+}
+
+function showAuth() {
+  document.getElementById('auth-overlay').style.display = 'flex';
+}
+
+function toggleAuth(isReg) {
+  document.getElementById('login-view').style.display = isReg ? 'none' : 'block';
+  document.getElementById('register-view').style.display = isReg ? 'block' : 'none';
+  document.getElementById('auth-error').textContent = '';
+}
+
+function logout() {
+  localStorage.removeItem('nischay_token');
+  localStorage.removeItem('nischay_student_id');
+  localStorage.removeItem('nischay_session_id');
+  sessionId = null;
+  showAuth();
+}
+
+async function handleAuth(type) {
+  const errorEl = document.getElementById('auth-error');
+  errorEl.textContent = '';
+  const ok = await checkApiHealth();
+  if (!ok) return;
+  try {
+    let data;
+    if (type === 'login') {
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-pass').value;
+      if (!email || !password) {
+        throw new Error('Email and password are required.');
+      }
+      data = await apiCall('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password })
+      });
+    } else {
+      const name = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-pass').value;
+      if (!name || !email || !password) {
+        throw new Error('Name, email, and password are required.');
+      }
+      if (password.length < 6) {
+        throw new Error('Password must be at least 6 characters.');
+      }
+      data = await apiCall('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ name, email, password })
+      });
+    }
+
+    localStorage.setItem('nischay_token', data.access_token);
+    localStorage.setItem('nischay_student_id', data.student_id);
+    document.getElementById('auth-overlay').style.display = 'none';
+    initApp();
+  } catch (err) {
+    errorEl.textContent = err.message;
+  }
+}
+
+/* ── APP INITIALIZATION ── */
+async function initApp() {
+  const overlay = document.getElementById('page-transition');
+  overlay.classList.add('active');
+  document.querySelector('.transition-text').textContent = 'Initializing reasoning system...';
+
+  await checkApiHealth();
+  if (!localStorage.getItem('nischay_token')) {
+    overlay.classList.remove('active');
+    showAuth();
+    return;
+  }
+
+  try {
+    await loadProfile();
+    if (!sessionId) {
+      await resetChat();
+    }
+    await loadMemoryCount();
+    document.querySelector('.transition-text').textContent = 'Ready';
+    setTimeout(() => overlay.classList.remove('active'), 300);
+  } catch (err) {
+    console.error('Init failed:', err);
+    overlay.classList.remove('active');
+    showAuth();
+  }
+}
+
+async function loadProfile() {
+  try {
+    const profile = await apiCall('/profile/');
+
+    const nameEl = document.getElementById('nav-user-name');
+    if (nameEl && profile.name) nameEl.textContent = profile.name;
+
+    const pct = profile.completeness || 0;
+    document.querySelector('.completeness-pct').textContent = pct + '%';
+    document.querySelector('.completeness-bar').style.width = pct + '%';
+
+    if (profile.personality_signals) {
+      const sigs = profile.personality_signals;
+      updateTraitBar('Risk tolerance', sigs.risk_tolerance);
+      updateTraitBar('Intrinsic motivation', sigs.intrinsic_motivation);
+      updateTraitBar('Analytical style', sigs.analytical_style);
+      updateTraitBar('Conscientiousness', sigs.conscientiousness);
+    }
+
+    const scoreEl = document.getElementById('sidebar-contra-score');
+    if (scoreEl && profile.contradiction_score !== undefined) {
+      scoreEl.textContent = profile.contradiction_score;
+      const bar = document.getElementById('sidebar-contra-bar');
+      if (bar) bar.style.width = profile.contradiction_score + '%';
+      scoreEl.style.color = profile.contradiction_score > 60 ? '#E05C4B' : profile.contradiction_score > 30 ? '#D4954A' : '#2EBF8E';
+    }
+
+    const stageEl = document.getElementById('sidebar-stage');
+    if (stageEl && profile.conversation_stage) {
+      stageEl.innerHTML = `<div class="stage-dot"></div>${profile.conversation_stage}`;
+    }
+  } catch (err) {
+    console.error('Failed to load profile', err);
+  }
+}
+
+let allMemories = [];
+
+async function loadMemoryCount() {
+  try {
+    const data = await apiCall('/memory/');
+    allMemories = data.memories || [];
+    const countEl = document.getElementById('sidebar-memory-count');
+    if (countEl && data.total !== undefined) {
+      countEl.textContent = data.total + ' insights stored';
+    }
+    renderMemories('all');
+    renderDriftLog(data.memories); // Use memories to find drift patterns
+
+    // NEW LOGIC FOR COMPLETENESS & CONTRADICTION SCORE
+    const completenessPct = Math.min(100, Math.round((allMemories.length / 21) * 100));
+    const pctEl = document.querySelector('.completeness-pct');
+    if (pctEl) pctEl.textContent = completenessPct + '%';
+    const barEl = document.querySelector('.completeness-bar');
+    if (barEl) barEl.style.width = completenessPct + '%';
+    const subEl = document.querySelector('.completeness-sub');
+    if (subEl) subEl.textContent = `${allMemories.length} fields captured · ${Math.max(0, 21 - allMemories.length)} remaining`;
+
+    const contradictions = allMemories.filter(m => m.type && m.type.toLowerCase() === 'contradiction');
+    const contradictionScore = Math.min(100, contradictions.length * 20); // Each contradiction adds 20%
+    const scoreEl = document.getElementById('sidebar-contra-score');
+    if (scoreEl) {
+      scoreEl.textContent = contradictionScore;
+      const cBar = document.getElementById('sidebar-contra-bar');
+      if (cBar) cBar.style.width = contradictionScore + '%';
+      scoreEl.style.color = contradictionScore > 60 ? '#E05C4B' : contradictionScore > 30 ? '#D4954A' : '#2EBF8E';
+    }
+
+    // Update behavioral drift status
+    const driftPill = document.getElementById('sidebar-drift-pill');
+    const driftText = document.getElementById('sidebar-drift-text');
+    if (driftPill && driftText) {
+      if (contradictionScore >= 40) {
+        driftPill.className = 'status-pill status-drift';
+        driftPill.style.borderColor = 'rgba(224,92,75,0.3)';
+        driftPill.style.background = 'rgba(224,92,75,0.1)';
+        driftPill.style.color = '#E05C4B';
+        driftPill.textContent = '⚠ Drift Detected';
+        driftText.textContent = 'Significant anomalies identified between stated priorities and long-term trajectory.';
+      } else if (contradictionScore > 0) {
+        driftPill.className = 'status-pill';
+        driftPill.style.borderColor = 'rgba(212,149,74,0.3)';
+        driftPill.style.background = 'rgba(212,149,74,0.1)';
+        driftPill.style.color = '#D4954A';
+        driftPill.textContent = '⚡ Low Drift';
+        driftText.textContent = 'Minor cognitive inconsistencies identified. System is closely monitoring alignment.';
+      } else {
+        driftPill.className = 'status-pill status-stable';
+        driftPill.style.borderColor = '';
+        driftPill.style.background = '';
+        driftPill.style.color = '';
+        driftPill.textContent = '✔ Stable';
+        driftText.textContent = 'No anomalies detected in reasoning path.';
+      }
+    }
+
+    if (currentTab === 'dashboard') loadDashboard();
+  } catch (err) {
+    console.error('Failed to load memory count', err);
+  }
+}
+
+function renderMemories(type = 'all') {
+  const container = document.getElementById('memory-items');
+  if (!container) return;
+
+  const filtered = type === 'all' 
+    ? allMemories 
+    : allMemories.filter(m => m.type.toLowerCase() === type.toLowerCase());
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div style="color:var(--text-dim);font-size:0.85rem;text-align:center;padding:3rem">
+      No memories of type "${type}" found.
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = '';
+  filtered.forEach(m => {
+    const row = document.createElement('div');
+    row.className = `memory-row type-${m.type || 'preference'}`;
+    const color = m.type === 'fear' ? '#E05C4B' : m.type === 'goal' ? '#2EBF8E' : m.type === 'contradiction' ? '#D4954A' : '#C8933C';
+    row.innerHTML = `
+      <div class="memory-type-dot" style="background:${color}"></div>
+      <div class="memory-row-content">${m.content}</div>
+      <div class="memory-row-meta">${new Date(m.created_at).toLocaleDateString()} · Confidence ${Math.round((m.confidence||0)*100)}%</div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function renderDriftLog(memories) {
+  const container = document.getElementById('drift-log-container');
+  const rows = document.getElementById('drift-log-rows');
+  if (!container || !rows) return;
+
+  const drifts = memories.filter(m => m.type === 'contradiction' || m.confidence > 0.85);
+  if (drifts.length > 0) {
+    container.style.display = 'block';
+    rows.innerHTML = drifts.slice(0, 3).map(d => `
+      <div class="drift-row">
+        <div class="drift-meta">${new Date(d.created_at).toLocaleTimeString()}</div>
+        <div class="drift-content">${d.content}</div>
+      </div>
+    `).join('');
+  } else {
+    container.style.display = 'none';
+  }
+}
+
+// Add filter pill listeners
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.filter-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      renderMemories(pill.textContent.toLowerCase());
+    });
+  });
+});
+
+function updateTraitBar(label, value) {
+  const rows = document.querySelectorAll('.trait-row');
+  rows.forEach(row => {
+    if (row.querySelector('span').textContent === label) {
+      const bar = row.querySelector('.trait-bar');
+      if (bar && value !== undefined) {
+        bar.style.width = value + '%';
+        bar.style.transition = 'width 0.8s cubic-bezier(0.34, 1.2, 0.64, 1)';
+      }
+    }
+  });
+}
+
+function switchTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  if (el && el.closest('.tabs')) el.classList.add('active');
+
+  const tabEl = document.querySelector(`.tab[onclick*="'${name}'"]`);
+  if (tabEl) tabEl.classList.add('active');
+
+  document.getElementById('panel-' + name).classList.add('active');
+  currentTab = name;
+
+  if (name === 'dashboard') loadDashboard();
+  if (name === 'memory') loadMemoryCount();
+  if (name === 'trajectory') updateTraj();
+}
+
+async function loadDashboard() {
+  try {
+    const profile = await apiCall('/profile/');
+    const careersResponse = await apiCall('/careers/').catch(() => ({ careers: [] }));
+    const trajectoryResponse = await apiCall('/trajectory/').catch(() => ({ trajectory: [] }));
+    
+    const careersData = careersResponse.careers || [];
+    const trajectoryData = trajectoryResponse.trajectory || [];
+
+    // REQUIRE AT LEAST 1 INSIGHT OR DYNAMIC BACKEND DATA
+    if (allMemories.length === 0 && careersData.length === 0 && trajectoryData.length === 0) {
+      const placeholder = '<div style="color:var(--text-dim);font-size:0.8rem;text-align:center;padding:1rem">Gathering data...</div>';
+      
+      const clusterEl = document.getElementById('dash-cluster');
+      if (clusterEl) clusterEl.innerHTML = placeholder;
+      
+      const riskVal = document.getElementById('dash-risk-val');
+      const riskText = document.getElementById('dash-risk-text');
+      if (riskVal && riskText) {
+        riskVal.textContent = '—';
+        riskVal.style.color = 'var(--text-dim)';
+        riskText.textContent = 'Gathering data...';
+      }
+
+      const rankingsEl = document.getElementById('dash-rankings');
+      if (rankingsEl) rankingsEl.innerHTML = '<div style="color:var(--text-dim);font-size:0.8rem;text-align:center;padding:2rem">Gathering data...</div>';
+      
+      return;
+    }
+
+    // 1. Cluster Analysis
+    const clusterEl = document.getElementById('dash-cluster');
+    if (clusterEl) {
+      const completenessPct = Math.min(100, Math.round((allMemories.length / 21) * 100));
+      if (completenessPct > 20 || trajectoryData.length > 0) {
+        clusterEl.innerHTML = `
+          <div style="font-family:var(--font-display);font-weight:700;font-size:1.1rem;color:var(--text-primary);margin-bottom:0.5rem">Analytically capable, Tier-2</div>
+          <div style="font-size:0.75rem;color:var(--text-muted)">Similar students: <span style="color:var(--accent-success)">1,248 in database</span></div>
+        `;
+      } else {
+        clusterEl.textContent = 'Undetermined cluster. Keep chatting to refine.';
+      }
+    }
+
+    // 2. Risk Calculation
+    const riskVal = document.getElementById('dash-risk-val');
+    const riskText = document.getElementById('dash-risk-text');
+    if (riskVal && riskText) {
+      const contradictions = allMemories.filter(m => m.type && m.type.toLowerCase() === 'contradiction');
+      const score = Math.min(100, contradictions.length * 20);
+      riskVal.textContent = score + '%';
+      riskVal.style.color = score > 60 ? 'var(--accent-danger)' : score > 30 ? 'var(--accent-warn)' : 'var(--accent-success)';
+      
+      if (score > 60) riskText.textContent = 'High risk detected. Internal values contradict stated goal.';
+      else if (score > 30) riskText.textContent = 'Moderate risk. Some misalignment in risk tolerance.';
+      else riskText.textContent = 'Stable. Profile alignment is high.';
+    }
+
+    // 3. Career Rankings
+    const rankingsEl = document.getElementById('dash-rankings');
+    if (rankingsEl) {
+      let careers = careersData;
+      // Fallback to mock logic if the API returns empty but we bypassed the guard (e.g. 5+ memories)
+      if (careers.length === 0) {
+        const sigs = profile.personality_signals || {};
+        careers = [
+          { name: 'B.Tech CSE', fit: (sigs.analytical_style || 50) + 10 },
+          { name: 'B.Des', fit: (sigs.intrinsic_motivation || 50) - 5 },
+          { name: 'B.Com + CA', fit: (sigs.conscientiousness || 50) + 5 }
+        ];
+      }
+      
+      const sortedCareers = careers.sort((a,b) => b.fit - a.fit);
+      rankingsEl.innerHTML = sortedCareers.map((c, i) => `
+        <div style="display:flex;justify-content:space-between;padding:0.65rem 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+          <div style="font-size:0.85rem"><span>${i+1}.</span> ${c.name}</div>
+          <div style="font-family:var(--font-mono);font-size:0.8rem;color:var(--accent-cyan)">${Math.min(98, Math.max(12, c.fit))}% fit</div>
+        </div>
+      `).join('');
+    }
+  } catch (err) {
+    console.error('Dashboard load failed:', err);
+  }
+}
+
+/* ── STREAMING CHAT ── */
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const area = document.getElementById('chat-area');
+  const text = input.value.trim();
+  if (!text || !sessionId) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+
+  const ub = document.createElement('div');
+  ub.className = 'bubble-user';
+  ub.textContent = text;
+  area.appendChild(ub);
+
+  const typing = document.createElement('div');
+  typing.className = 'typing-indicator';
+  typing.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+  area.appendChild(typing);
+  area.scrollTop = area.scrollHeight;
+
+  try {
+    const token = localStorage.getItem('nischay_token');
+    const response = await fetch(`${API_BASE}/chat/${sessionId}/stream`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ message: text })
+    });
+
+    if (response.status === 401) {
+      if (typing.parentNode) area.removeChild(typing);
+      logout();
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error('Stream request failed');
+    }
+
+    if (typing.parentNode) area.removeChild(typing);
+
+    const ab = document.createElement('div');
+    ab.className = 'bubble-ai';
+    const metaDiv = document.createElement('div');
+    metaDiv.className = 'response-meta';
+    metaDiv.innerHTML = `
+      <span class="agent-label">Processing...</span>
+      <span class="confidence-label">Confidence: —</span>
+    `;
+    ab.appendChild(metaDiv);
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'streaming-cursor';
+    ab.appendChild(contentDiv);
+    area.appendChild(ab);
+    area.scrollTop = area.scrollHeight;
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let fullText = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try {
+          const data = JSON.parse(line.slice(6));
+
+          if (data.type === 'meta') {
+            metaDiv.innerHTML = `
+              <span class="agent-label">${data.agent || 'AI'}</span>
+              <span class="confidence-label">Confidence: ${data.confidence || '—'}</span>
+            `;
+            const sidebarAgent = document.querySelector('.agent-active');
+            if (sidebarAgent) {
+              sidebarAgent.innerHTML = `<div class="agent-active-label">// currently running</div>${data.agent}`;
+            }
+          } else if (data.type === 'token') {
+            fullText += data.token;
+            contentDiv.textContent = fullText;
+            area.scrollTop = area.scrollHeight;
+          } else if (data.type === 'done') {
+            contentDiv.classList.remove('streaming-cursor');
+          }
+        } catch (e) {
+          /* skip malformed SSE lines */
+        }
+      }
+    }
+
+    contentDiv.classList.remove('streaming-cursor');
+    contentDiv.innerHTML = fullText.replace(/\n/g, '<br>');
+    area.scrollTop = area.scrollHeight;
+
+    // Refresh Sidebar Stats
+    await loadProfile();
+    await loadMemoryCount();
+
+  } catch (err) {
+    if (typing.parentNode) area.removeChild(typing);
+    console.error('Chat error:', err);
+    const errBubble = document.createElement('div');
+    errBubble.className = 'bubble-ai';
+    errBubble.innerHTML = `<div style="color:var(--accent-danger);font-size:0.82rem;">Connection error. Please try again.</div>`;
+    area.appendChild(errBubble);
+  }
+}
+
+async function resetChat() {
+  try {
+    const data = await apiCall('/chat/new', { method: 'POST' });
+    sessionId = data.session_id;
+    localStorage.setItem('nischay_session_id', sessionId);
+
+    const area = document.getElementById('chat-area');
+    area.innerHTML = `<div class="bubble-ai">
+      <div class="response-meta">
+        <span class="agent-label">Profile Agent</span>
+        <span class="confidence-label">Confidence: —</span>
+      </div>
+      I'm Nischay — your AI career and life coach. Tell me about your situation, and I'll help you see the probability distribution of your future before you commit years to it.<br><br>
+      What's on your mind?
+    </div>`;
+  } catch (err) {
+    console.error('Failed to reset chat', err);
+  }
+}
+
+let selectedPaths = [];
+const careerData = {
+  'MBBS': { color: '#E05C4B', income: [0, 0, 0, 5, 12, 18, 22, 28, 35, 45], satisfaction: [80, 75, 70, 65, 60, 58, 55, 52, 50, 48], burnout: [10, 15, 25, 40, 55, 60, 65, 70, 72, 75], autonomy: [2, 2, 3, 3, 4, 5, 6, 7, 8, 9], regretBase: 42 },
+  'CSE': { color: '#C8933C', income: [8, 12, 18, 25, 32, 40, 50, 65, 80, 100], satisfaction: [85, 88, 85, 82, 80, 78, 75, 72, 70, 68], burnout: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50], autonomy: [7, 7, 8, 8, 8, 8, 9, 9, 9, 10], regretBase: 24 },
+  'CA': { color: '#2EBF8E', income: [6, 9, 13, 18, 24, 30, 38, 48, 60, 75], satisfaction: [75, 78, 80, 82, 80, 78, 76, 74, 72, 70], burnout: [20, 30, 35, 40, 35, 30, 30, 30, 30, 30], autonomy: [4, 5, 6, 7, 7, 7, 8, 8, 8, 9], regretBase: 31 },
+  'DES': { color: '#6B5DB0', income: [5, 8, 12, 15, 20, 26, 34, 42, 52, 65], satisfaction: [90, 92, 88, 85, 82, 80, 78, 76, 74, 72], burnout: [10, 15, 20, 25, 30, 35, 40, 45, 48, 50], autonomy: [8, 9, 9, 10, 10, 10, 10, 10, 10, 10], regretBase: 18 },
+  'MBA': { color: '#5878C8', income: [10, 15, 22, 35, 50, 70, 90, 120, 150, 200], satisfaction: [70, 72, 68, 65, 62, 60, 58, 56, 54, 52], burnout: [30, 40, 50, 60, 65, 70, 75, 80, 85, 90], autonomy: [5, 6, 6, 7, 7, 8, 8, 9, 9, 9], regretBase: 38 }
+};
+
+function toggleTraj(path, el) {
+  const idx = selectedPaths.indexOf(path);
+  if (idx > -1) {
+    selectedPaths.splice(idx, 1);
+    el.classList.remove('active');
+  } else {
+    if (selectedPaths.length >= 2) {
+      // Remove first one if already 2 selected
+      const first = selectedPaths.shift();
+      const btns = document.querySelectorAll('.traj-btn');
+      btns.forEach(b => { if(b.textContent.includes(first)) b.classList.remove('active'); });
+    }
+    selectedPaths.push(path);
+    el.classList.add('active');
+  }
+  updateTraj();
+}
+
+function updateTraj() {
+  const motivation = document.getElementById('slider-motivation').value / 100;
+  const pressure = document.getElementById('slider-pressure').value / 100;
+
+  renderCharts(motivation, pressure);
+  updateRegretScores(motivation, pressure);
+}
+
+function renderCharts(mot, pre) {
+  const charts = ['income', 'satisfaction', 'burnout', 'autonomy'];
+  charts.forEach(type => {
+    const svg = document.getElementById(`svg-${type}`);
+    if (!svg) return;
+
+    // Clear existing lines
+    const oldLines = svg.querySelectorAll('.traj-line');
+    oldLines.forEach(l => l.remove());
+
+    selectedPaths.forEach(path => {
+      const data = careerData[path];
+      let points = [];
+      const values = data[type];
+
+      values.forEach((v, i) => {
+        let adjusted = v;
+        // Simple logic to adjust based on sliders
+        if (type === 'satisfaction') adjusted = v * (0.5 + mot) * (1.2 - pre);
+        if (type === 'burnout') adjusted = v * (1.5 - mot) * (0.8 + pre);
+        if (type === 'income') adjusted = v * (0.8 + (mot * 0.4)) * (1.0 - (pre * 0.2));
+        if (type === 'autonomy') adjusted = v * (0.5 + (mot * 0.8)) * (1.1 - (pre * 0.3));
+        
+        const x = 10 + (i * 37);
+        let y = 105 - (adjusted);
+        if (type === 'income') y = 105 - (adjusted * 0.5); // scale income
+        if (type === 'autonomy') y = 105 - (adjusted * 9); // scale 1-10
+        
+        points.push(`${x},${Math.max(10, Math.min(105, y))}`);
+      });
+
+      const poly = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+      poly.setAttribute("points", points.join(" "));
+      poly.setAttribute("fill", "none");
+      poly.setAttribute("stroke", data.color);
+      poly.setAttribute("stroke-width", "2");
+      poly.setAttribute("class", "traj-line");
+      poly.setAttribute("stroke-linecap", "round");
+      svg.appendChild(poly);
+    });
+  });
+}
+
+function updateRegretScores(mot, pre) {
+  [1, 2].forEach(i => {
+    const probEl = document.getElementById(`traj-prob-${i}`);
+    const labelEl = document.getElementById(`traj-label-${i}`);
+    const path = selectedPaths[i - 1];
+
+    if (path) {
+      const data = careerData[path];
+      const prob = Math.round(data.regretBase * (1.5 - mot) * (0.7 + pre));
+      probEl.textContent = Math.min(95, Math.max(5, prob)) + '%';
+      probEl.style.color = prob > 50 ? '#E05C4B' : prob > 30 ? '#D4954A' : '#2EBF8E';
+      labelEl.textContent = path;
+    } else {
+      probEl.textContent = '—';
+      probEl.style.color = '#4A4438';
+      labelEl.textContent = i === 1 ? 'Select a career path' : 'Select 2nd path to compare';
+    }
+  });
+}
+
+async function handleFileUpload(input) {
+  if (!input.files.length) return;
+  const zone = document.getElementById('upload-zone');
+  const feedbackList = document.getElementById('resume-feedback-list');
+  const feedbackLabel = document.getElementById('resume-feedback-label');
+  
+  zone.innerHTML = `
+    <div style="font-size:1.5rem;margin-bottom:0.5rem">⌛</div>
+    <div style="font-family:var(--font-display);font-weight:600;">Analyzing...</div>`;
+
+  try {
+    const token = localStorage.getItem('nischay_token');
+    if (!token) throw new Error('Please sign in first.');
+    const formData = new FormData();
+    formData.append('file', input.files[0]);
+
+    const response = await fetch(`${API_BASE}/resume/analyze`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ detail: 'Upload failed' }));
+      throw new Error(err.detail || 'Upload failed');
+    }
+    const data = await response.json();
+
+    zone.innerHTML = `
+      <div style="font-size:1.5rem;margin-bottom:0.5rem">✓</div>
+      <div style="font-family:var(--font-display);font-weight:600;color:var(--accent-success)">Analysis complete</div>
+      <div style="font-size:0.8rem;color:var(--text-dim);margin-top:0.3rem">${input.files[0].name}</div>`;
+
+    if (data.feedback && data.feedback.length > 0) {
+      feedbackLabel.textContent = 'Intelligent Feedback — AI Analysis';
+      feedbackList.innerHTML = '';
+      data.feedback.forEach(item => {
+        const div = document.createElement('div');
+        div.className = `feedback-item ${item.priority || 'medium'}`;
+        div.innerHTML = `
+          <div class="feedback-priority">${item.priority || 'medium'} priority</div>
+          <div class="feedback-before">Before: ${item.before}</div>
+          <div class="feedback-after">After: ${item.after}</div>
+          <div class="feedback-why">Why: ${item.why}</div>
+        `;
+        feedbackList.appendChild(div);
+      });
+    }
+  } catch (err) {
+    zone.innerHTML = `<div style="color:var(--accent-danger)">Error: ${err.message}</div>`;
+  }
+}
+
+// Auto-resize textarea
+const inputEl = document.getElementById('chat-input');
+if (inputEl) {
+  inputEl.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+  });
+}
+
+// ── CURSOR ──
+const cur = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+let cursorInitialized = false;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX;
+  my = e.clientY;
+  if (!cursorInitialized) {
+    cursorInitialized = true;
+    if (cur) cur.style.opacity = '1';
+    if (ring) ring.style.opacity = '1';
+  }
+});
+
+function animateCursor() {
+  if (cur) { cur.style.left = mx + 'px'; cur.style.top = my + 'px'; }
+  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+  if (ring) { ring.style.left = rx + 'px'; ring.style.top = ry + 'px'; }
+  requestAnimationFrame(animateCursor);
+}
+animateCursor();
+
+function bindCursorEvents() {
+  document.querySelectorAll('a, button, input[type=range], textarea, .tab, .filter-pill, .traj-btn, .chat-send-btn, .theme-toggle').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      if (cur) { cur.style.width = '20px'; cur.style.height = '20px'; }
+      if (ring) { ring.style.width = '50px'; ring.style.height = '50px'; }
+    });
+    el.addEventListener('mouseleave', () => {
+      if (cur) { cur.style.width = '12px'; cur.style.height = '12px'; }
+      if (ring) { ring.style.width = '36px'; ring.style.height = '36px'; }
+    });
+  });
+}
+bindCursorEvents();
+// Re-bind cursor events whenever content changes dynamically
+const observer = new MutationObserver(bindCursorEvents);
+observer.observe(document.body, { childList: true, subtree: true });
+
+// ── PARTICLES ──
+(function initParticles() {
+  const canvas = document.getElementById('particles-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W, H, nodes, edges;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', () => { resize(); build(); });
+
+  function build() {
+    const count = Math.floor((W * H) / 22000);
+    nodes = Array.from({length: count}, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 1.5 + 0.5, pulse: Math.random() * Math.PI * 2
+    }));
+    edges = [];
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i+1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        if (Math.sqrt(dx*dx+dy*dy) < 130) edges.push([i,j]);
+      }
+    }
+  }
+  build();
+
+  let t = 0;
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    t += 0.008;
+    if (Math.round(t*100) % 40 === 0) {
+      edges = [];
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i+1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          if (Math.sqrt(dx*dx+dy*dy) < 130) edges.push([i,j]);
+        }
+      }
+    }
+    edges.forEach(([a,b]) => {
+      const na = nodes[a], nb = nodes[b];
+      const dx = na.x-nb.x, dy = na.y-nb.y;
+      const d = Math.sqrt(dx*dx+dy*dy);
+      const alpha = (1 - d/130) * 0.09;
+      ctx.beginPath();
+      ctx.moveTo(na.x, na.y);
+      ctx.lineTo(nb.x, nb.y);
+      ctx.strokeStyle = `rgba(200,147,60,${alpha})`;
+      ctx.lineWidth = 0.6;
+      ctx.stroke();
+    });
+    nodes.forEach(n => {
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0 || n.x > W) n.vx *= -1;
+      if (n.y < 0 || n.y > H) n.vy *= -1;
+      n.pulse += 0.02;
+      const glow = Math.sin(n.pulse) * 0.3 + 0.7;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(200,147,60,${0.22 * glow})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// Start
+initApp();
+</script>
+</body>
+</html>
