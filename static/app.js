@@ -11,20 +11,19 @@ function resolveApiBase() {
   }
 
   const saved = localStorage.getItem('nischay_api_base');
-  if (saved) return saved.replace(/\/$/, '');
+  if (saved) {
+    if (!window.location.origin.includes('localhost') && saved.includes('localhost')) {
+      localStorage.removeItem('nischay_api_base');
+    } else {
+      return saved.replace(/\/$/, '');
+    }
+  }
 
   if (window.location.protocol === 'file:') {
-    return 'http://localhost:8001/api/v1';
+    return 'http://localhost:8000/api/v1';
   }
 
-  if (
-    window.location.origin.includes('localhost:') ||
-    window.location.origin.includes('127.0.0.1:')
-  ) {
-    return '/api/v1';
-  }
-
-  return 'http://localhost:8001/api/v1';
+  return '/api/v1';
 }
 
 async function checkApiHealth() {
