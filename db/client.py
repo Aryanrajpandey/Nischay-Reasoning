@@ -13,6 +13,11 @@ def _parse_sqlite_path(url: str) -> str:
 
 def init_db() -> None:
     db_path = _parse_sqlite_path(settings.DATABASE_URL)
+    
+    # Dynamic sync from Supabase Storage during cold start
+    from db.sync import download_database_from_supabase
+    download_database_from_supabase(db_path)
+    
     conn = sqlite3.connect(db_path, check_same_thread=False)
     try:
         conn.execute(
@@ -92,8 +97,14 @@ def get_db() -> sqlite3.Connection:
     db_path = _parse_sqlite_path(settings.DATABASE_URL)
     conn = sqlite3.connect(db_path, check_same_thread=False)
     conn.row_factory = sqlite3.Row
+    has_committed = False
     try:
         yield conn
         conn.commit()
+        has_committed = True
     finally:
         conn.close()
+        # Persist the changes back to Supabase Storage after committing
+        if has_committed:
+            from db.sync import upload_database_to_supabase
+            upload_database_to_supabase(db_path)
