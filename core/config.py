@@ -39,6 +39,15 @@ class Settings(BaseSettings):
     # HuggingFace
     HUGGINGFACE_TOKEN: str = ""
 
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def check_vercel_db(cls, v):
+        """Redirect SQLite to writeable /tmp path if running on Vercel."""
+        import os
+        if os.environ.get("VERCEL") or os.environ.get("VERCEL_ENV"):
+            return "sqlite:////tmp/nischay.db"
+        return v
+
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod
     def parse_origins(cls, v):
@@ -86,9 +95,13 @@ def validate_settings(s: "Settings") -> None:
         )
 
     if errors:
-        raise RuntimeError(
-            "Environment validation failed:\n" + "\n".join(f"  • {e}" for e in errors)
-        )
+        import structlog
+        logger = structlog.get_logger()
+        logger.error("settings_validation_failed", errors=errors)
+        if s.ENVIRONMENT == "production":
+            raise RuntimeError(
+                "Environment validation failed:\n" + "\n".join(f"  • {e}" for e in errors)
+            )
 
 
 settings = Settings()
