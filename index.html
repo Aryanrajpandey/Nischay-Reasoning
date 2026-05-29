@@ -176,6 +176,13 @@ body:hover #cursor-ring { opacity: 1; }
   box-shadow: 0 0 28px rgba(200, 147, 60, 0.5);
   transform: scale(1.03);
 }
+.mobile-menu-btn {
+  display: none;
+}
+.mobile-cta-item {
+  display: none;
+}
+
 
 /* ── SECTION SHARED ── */
 section { position: relative; }
@@ -582,11 +589,18 @@ section { position: relative; }
   padding: 8rem 0;
   background: var(--bg-panel);
 }
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 3rem;
+}
 .comparison-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 3rem;
+  margin-top: 0;
   font-size: 0.85rem;
+  min-width: 600px; /* Ensure columns have adequate space on mobile scroll */
 }
 .comparison-table th {
   font-family: var(--font-display);
@@ -1259,6 +1273,14 @@ input[type=range]:hover::-webkit-slider-thumb { transform: scale(1.2); }
   .hero-h1 { font-size: clamp(2.8rem, 8vw, 4.5rem); }
 }
 @media (max-width: 900px) {
+  /* Hide custom cursor on mobile touchscreens */
+  *, *::before, *::after {
+    cursor: auto !important;
+  }
+  #cursor, #cursor-ring {
+    display: none !important;
+  }
+
   .stats-grid { grid-template-columns: repeat(3,1fr); }
   .problem-cards { grid-template-columns: 1fr; }
   .trajectory-grid { grid-template-columns: 1fr; }
@@ -1269,6 +1291,61 @@ input[type=range]:hover::-webkit-slider-thumb { transform: scale(1.2); }
   .manifesto-statements { grid-template-columns: 1fr; }
   #navbar { padding: 0 1.5rem; }
   .nav-links { display: none; }
+  .nav-cta { display: none; }
+  .mobile-menu-btn {
+    display: block !important;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 1001;
+    transition: transform 0.2s ease;
+  }
+  .nav-links.open {
+    display: flex !important;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(7, 9, 15, 0.98);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2.5rem;
+    z-index: 1000;
+    margin: 0;
+    padding: 0;
+    left: 0;
+    top: 0;
+    transform: none;
+    animation: fadeInMenu 0.3s ease forwards;
+  }
+  @keyframes fadeInMenu {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .nav-links.open li a {
+    font-size: 1.5rem !important;
+    font-family: var(--font-display);
+    font-weight: 700;
+  }
+  .mobile-cta-item {
+    display: block !important;
+    margin-top: 1.5rem;
+  }
+  .mobile-cta-btn {
+    background: var(--accent-cyan);
+    color: var(--bg-void) !important;
+    padding: 0.85rem 2rem !important;
+    border-radius: 9999px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.1rem !important;
+    box-shadow: 0 0 20px rgba(200, 147, 60, 0.4);
+  }
   #hero { padding-top: 120px; }
 }
 @media (max-width: 600px) {
@@ -1299,14 +1376,17 @@ input[type=range]:hover::-webkit-slider-thumb { transform: scale(1.2); }
 <!-- ─── NAVBAR ─── -->
 <nav id="navbar">
   <div class="nav-logo">Ni<span>s</span>chay</div>
-  <ul class="nav-links">
+  <ul class="nav-links" id="nav-links">
     <li><a href="#manifesto">Why This Exists</a></li>
     <li><a href="#reasoning">How It Reasons</a></li>
     <li><a href="#intelligence">Intelligence</a></li>
     <li><a href="#trajectory">Simulation</a></li>
+    <li class="mobile-cta-item"><a href="/app" class="mobile-cta-btn">Begin reasoning</a></li>
   </ul>
   <a href="/app" class="nav-cta">Begin reasoning</a>
+  <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Toggle Navigation">☰</button>
 </nav>
+
 
 <!-- ─── HERO ─── -->
 <section id="hero">
@@ -1465,7 +1545,8 @@ input[type=range]:hover::-webkit-slider-thumb { transform: scale(1.2); }
       <h2 class="section-h2">Every existing system fails you <em>in a specific way.</em></h2>
     </div>
 
-    <table class="comparison-table reveal reveal-delay-2">
+    <div class="table-wrapper reveal reveal-delay-2">
+      <table class="comparison-table">
       <thead>
         <tr>
           <th></th>
@@ -1534,7 +1615,8 @@ input[type=range]:hover::-webkit-slider-thumb { transform: scale(1.2); }
           <td class="nischay-col"><span class="check">✓</span></td>
         </tr>
       </tbody>
-    </table>
+      </table>
+    </div>
 
     <div class="comparison-closer reveal reveal-delay-3">
       <p class="word-reveal">Nischay doesn't give you advice.<br>It gives you a <em>model of your actual situation.</em></p>
@@ -2440,6 +2522,31 @@ document.querySelectorAll('.agent-card').forEach(card => {
   }
   draw();
 })();
+
+// Mobile Menu Toggle Script
+function toggleMobileMenu() {
+  const links = document.getElementById('nav-links');
+  const btn = document.querySelector('.mobile-menu-btn');
+  links.classList.toggle('open');
+  if (links.classList.contains('open')) {
+    btn.textContent = '✕';
+    document.body.style.overflow = 'hidden';
+  } else {
+    btn.textContent = '☰';
+    document.body.style.overflow = '';
+  }
+}
+document.querySelectorAll('#nav-links a').forEach(a => {
+  a.addEventListener('click', () => {
+    const links = document.getElementById('nav-links');
+    const btn = document.querySelector('.mobile-menu-btn');
+    if (links.classList.contains('open')) {
+      links.classList.remove('open');
+      btn.textContent = '☰';
+      document.body.style.overflow = '';
+    }
+  });
+});
 </script>
 </body>
 </html>

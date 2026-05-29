@@ -105,6 +105,26 @@ async function loadDashboard() {
 
 function toggleMobileMenu() {
   document.getElementById('nav-links').classList.toggle('open');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (sidebar && sidebar.classList.contains('open')) {
+    sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('active');
+  }
+}
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (!sidebar || !overlay) return;
+  
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('active');
+  
+  const mobileLinks = document.getElementById('nav-links');
+  if (mobileLinks && mobileLinks.classList.contains('open')) {
+    mobileLinks.classList.remove('open');
+  }
 }
 
 // Global reference for auth dialog visibility
@@ -371,6 +391,12 @@ function updateTraitBar(label, value) {
 }
 
 function switchTab(name, el) {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (sidebar && sidebar.classList.contains('open')) {
+    sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('active');
+  }
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   if (el && el.closest('.tabs')) el.classList.add('active');

@@ -33,6 +33,7 @@
     </ul>
   </div>
   <div class="top-nav-right">
+    <button class="mobile-sidebar-btn" onclick="toggleSidebar()" aria-label="Toggle Status">📊 Status</button>
     <span class="nav-user-badge" id="nav-user-name"></span>
     <button class="btn-nav-signout" onclick="logout()">Sign out</button>
   </div>
@@ -49,6 +50,9 @@
 
 <!-- APP BODY -->
 <div id="app-body">
+
+<!-- SIDEBAR BACKDROP OVERLAY -->
+<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
 <!-- SIDEBAR -->
 <aside id="sidebar">
@@ -170,7 +174,7 @@
       <div class="traj-btn" onclick="toggleTraj('MBA', this)">BBA + MBA</div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+    <div class="traj-sliders-grid">
       <div>
         <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:0.6rem">Intrinsic Motivation</div>
         <input type="range" id="slider-motivation" min="0" max="100" value="50" style="width:100%" oninput="updateTraj()">
@@ -232,7 +236,7 @@
     </div>
 
     <!-- Regret summary -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+    <div class="traj-regret-grid">
       <div style="background:rgba(224,92,75,0.05);border:1px solid rgba(224,92,75,0.15);border-radius:1rem;padding:1.25rem;text-align:center">
         <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem">Regret Probability (Current Path)</div>
         <div id="traj-prob-1" style="font-family:var(--font-display);font-weight:800;font-size:2.5rem;color:#4A4438;letter-spacing:-0.04em">—</div>

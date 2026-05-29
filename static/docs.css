@@ -211,3 +211,130 @@ html, body {
 .swagger-ui .response-control-media-type__accept-message {
   color: var(--text-dim);
 }
+
+/* ── PHONE RESPONSIVENESS AND TEXT SCALING OVERRIDES ── */
+@media (max-width: 768px) {
+  /* Hide custom cursor-related blocks if any, and ensure default touch behaviour */
+  *, *::before, *::after {
+    cursor: auto !important;
+  }
+
+  /* Base scaling of Swagger UI content for touchscreens */
+  .swagger-ui {
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+  }
+
+  /* Scale headers and information sections */
+  .swagger-ui .info .title {
+    font-size: 1.8rem !important;
+    line-height: 1.2 !important;
+  }
+  .swagger-ui .info .title small {
+    font-size: 0.55em !important;
+    padding: 3px 8px !important;
+    border-radius: 9999px !important;
+    margin-left: 8px !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+  }
+  .swagger-ui .info .description {
+    font-size: 0.92rem !important;
+    line-height: 1.6 !important;
+  }
+  
+  /* Prevent horizontal cut-off of long API paths by enabling wrap & break */
+  .swagger-ui .opblock .opblock-summary {
+    flex-wrap: wrap !important;
+    padding: 10px !important;
+    gap: 8px !important;
+  }
+  .swagger-ui .opblock .opblock-summary-method {
+    font-size: 0.75rem !important;
+    min-width: 70px !important;
+    text-align: center !important;
+    padding: 4px 10px !important;
+  }
+  .swagger-ui .opblock .opblock-summary-path {
+    font-size: 0.9rem !important;
+    word-break: break-all !important;
+    flex-shrink: 1 !important;
+  }
+  .swagger-ui .opblock .opblock-summary-description {
+    font-size: 0.8rem !important;
+    width: 100% !important;
+    margin-top: 4px !important;
+  }
+  
+  /* Increase readability inside documentation bodies */
+  .swagger-ui .opblock-description-wrapper p,
+  .swagger-ui .opblock-title_normal {
+    font-size: 0.85rem !important;
+  }
+  .swagger-ui .opblock-section-header h4 {
+    font-size: 0.9rem !important;
+  }
+
+  /* Make sure parameter descriptions and input types are perfectly legible */
+  .swagger-ui .parameter__name {
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+  }
+  .swagger-ui .parameter__type {
+    font-size: 0.76rem !important;
+    display: block !important;
+    margin-top: 2px !important;
+  }
+  .swagger-ui .parameter__in {
+    font-size: 0.72rem !important;
+    display: block !important;
+  }
+  
+  /* Let parameter and response tables scroll horizontally instead of squeezing */
+  .swagger-ui .table-container {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .swagger-ui table {
+    width: 100% !important;
+    min-width: 500px !important; /* Force width to enable clean swiping */
+  }
+  .swagger-ui td {
+    padding: 8px 4px !important;
+    font-size: 0.85rem !important;
+  }
+  .swagger-ui th {
+    font-size: 0.85rem !important;
+  }
+  
+  /* Models & Schema styling */
+  .swagger-ui .model-title {
+    font-size: 0.85rem !important;
+  }
+  .swagger-ui .model {
+    font-size: 0.8rem !important;
+    line-height: 1.5 !important;
+  }
+  .swagger-ui .response-col_status {
+    font-size: 0.85rem !important;
+  }
+  
+  /* Inputs, Textareas, and Action buttons */
+  .swagger-ui input[type='text'],
+  .swagger-ui input[type='password'],
+  .swagger-ui input[type='search'],
+  .swagger-ui textarea {
+    font-size: 0.88rem !important;
+    padding: 8px 10px !important;
+  }
+  .swagger-ui .btn {
+    font-size: 0.8rem !important;
+    padding: 6px 14px !important;
+  }
+  
+  /* Rendered markdown body sizes */
+  .swagger-ui .renderedMarkdown p,
+  .swagger-ui .renderedMarkdown li {
+    font-size: 0.88rem !important;
+  }
+}
